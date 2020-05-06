@@ -23,8 +23,10 @@ private:
     Ui::Widget *ui;
     char imageData[512*512];
     short* m_pImageData;
+    short* m_pImageData_130;
     int updatedStart;
     int updatedWidth;
+    int currentLayer;
 
 private slots:
     int windowing( int HU_value, int startValue, int windowWidth);
@@ -34,7 +36,11 @@ private slots:
     //void SetPicture();
     void updatedWindowingStart(int value);
     void updatedWindowingWidth(int value);
-    void update2DView(int start, int width);
+    void update2DView();
+
+    void ReadFile_layered();
+    void update3DView();
+    void updatedCurrentLayer(int value);
 };
 
 
