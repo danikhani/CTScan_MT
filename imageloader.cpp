@@ -1,7 +1,7 @@
-#include "widget.h"
-#include "ui_widget.h"
+#include "imageloader.h"
+#include "ui_imageloader.h"
 
-Widget::Widget(QWidget *parent) :
+ImageLoader::ImageLoader(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
@@ -10,16 +10,21 @@ Widget::Widget(QWidget *parent) :
     connect(ui->pushButton_8bit, SIGNAL(clicked()), this, SLOT(ReadFile()));
     //give the button 12 bit
     connect(ui->pushButton_12bit, SIGNAL(clicked()), this, SLOT(ReadFile_12bit()));
+    //update slider numbers
+    connect(ui->slider_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
+    connect(ui->slider_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
     //Speicher der Größe 512*512 reservieren
     m_pImageData = new short[512*512];
+    updatedStart = 800;
+    updatedWidth = 400;
 }
 
-Widget::~Widget()
+ImageLoader::~ImageLoader()
 {
     delete ui;
     delete[] m_pImageData;
 }
-void Widget::MalePixel()
+void ImageLoader::MalePixel()
 {
     QImage image(512,512, QImage::Format_RGB32);
     image.setPixel(50,100,qRgb(255,0,0));
@@ -27,7 +32,7 @@ void Widget::MalePixel()
     //ui->pushButton_Pixel->setText("Funktioniert");
 }
 
-void Widget::ReadFile()
+void ImageLoader::ReadFile()
 {
     // To open a raw file from a dialog
     QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
@@ -66,7 +71,7 @@ void Widget::ReadFile()
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
-void Widget::ReadFile_12bit(){
+void ImageLoader::ReadFile_12bit(){
     // To open a raw file from a dialog
     QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
     QFile dataFile(imagePath);
@@ -91,18 +96,9 @@ void Widget::ReadFile_12bit(){
     dataFile.close();
 
     //read from the array and make the picture
-    QImage image(512,512, QImage::Format_RGB32);
-    int imageDataPosition = 0;
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            int iGrauWert = windowing(m_pImageData[imageDataPosition],800,400);
-            image.setPixel(x,y,qRgb(iGrauWert,iGrauWert,iGrauWert));
-            imageDataPosition++;
-        }
-    }
-    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
+    update2DView(800,400);
 }
-int Widget::windowing(int Hu_value, int startValue, int windowWidth){
+int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
     int iGrauwert;
     //fensterung berechnen
     if(Hu_value<startValue){
@@ -112,9 +108,35 @@ int Widget::windowing(int Hu_value, int startValue, int windowWidth){
         iGrauwert = 255;
     }
     else{
-        iGrauwert = (Hu_value-startValue)/windowWidth * 255.0;
-        //iGrauwert = 100;
+        iGrauwert =  255.0/windowWidth * (Hu_value-startValue);
     }
     return iGrauwert;
 }
 
+void ImageLoader::updatedWindowingStart(int value)
+{
+    ui ->label_start->setText("Start:" + QString::number(value));
+    updatedStart = value;
+    update2DView(updatedStart,updatedWidth);
+}
+void ImageLoader::updatedWindowingWidth(int value)
+{
+    ui ->label_width->setText("Width:" + QString::number(value));
+    updatedWidth = value;
+    update2DView(updatedStart,updatedWidth);
+}
+
+void ImageLoader::update2DView(int start, int width)
+{
+    //read from the array and make the picture
+    QImage image(512,512, QImage::Format_RGB32);
+    int imageDataPosition = 0;
+    for(int y = 0 ; y < 512; y++){
+        for(int x = 0 ; x < 512 ; x++){
+            int iGrauWert = windowing(m_pImageData[imageDataPosition],start,width);
+            image.setPixel(x,y,qRgb(iGrauWert,iGrauWert,iGrauWert));
+            imageDataPosition++;
+        }
+    }
+    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
+}

@@ -11,25 +11,30 @@ namespace Ui {
 class Widget;
 }
 
-class Widget : public QWidget
+class ImageLoader : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit Widget(QWidget *parent = 0);
-    ~Widget();
+    explicit ImageLoader(QWidget *parent = 0);
+    ~ImageLoader();
 
 private:
     Ui::Widget *ui;
     char imageData[512*512];
     short* m_pImageData;
-    int windowing( int HU_value, int startValue, int windowWidth);
+    int updatedStart;
+    int updatedWidth;
 
 private slots:
+    int windowing( int HU_value, int startValue, int windowWidth);
     void MalePixel();
     void ReadFile();
     void ReadFile_12bit();
     //void SetPicture();
+    void updatedWindowingStart(int value);
+    void updatedWindowingWidth(int value);
+    void update2DView(int start, int width);
 };
 
 
