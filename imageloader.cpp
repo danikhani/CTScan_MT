@@ -12,6 +12,8 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->pushButton_12bit, SIGNAL(clicked()), this, SLOT(ReadFile_12bit()));
     connect(ui->pushButton_layered, SIGNAL(clicked()), this, SLOT(ReadFile_layered()));
 
+    connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(ifTiefenKarte()));
+
     //update slider numbers
     connect(ui->slider_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
     connect(ui->slider_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
@@ -21,6 +23,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     //Speicher der Größe 512*512 reservieren
     m_pImageData = new short[512*512];
     m_pImageData_130 = new short[130*512*512];
+    m_pTiefenkarte = new short[512*512];
 }
 
 ImageLoader::~ImageLoader()
@@ -159,9 +162,11 @@ void ImageLoader::updatedWindowingWidth(int value)
 void ImageLoader::updateView(){
     if (loaded3D){
         update3DView();
+        tiefenKarteAllowed = true;
     }
     else{
         update2DView();
+        tiefenKarteAllowed = false;
     }
 }
 
@@ -214,4 +219,29 @@ void ImageLoader::updatedWindowingThreshold(int value)
 {
     ui ->label_threshold->setText("Threshold:" + QString::number(value));
     updateView();
+}
+void ImageLoader::ifTiefenKarte(){
+    if (tiefenKarteAllowed){
+         updatedTiefenKarte();
+    }
+}
+void ImageLoader::updatedTiefenKarte(){
+    QImage image(512,512, QImage::Format_RGB32);
+    int currenttiefe = 0;
+    for(int y = 0 ; y < 512; y++){
+        for(int x = 0 ; x < 512 ; x++){
+            for(int layer = 129; layer >= 0; layer--){
+                int imageDataPosition =layer*512*512 + x + 512*y;;
+                if(m_pImageData_130[imageDataPosition] > ui->slider_threshold ->value()){
+                    currenttiefe = 129-layer;
+                    break;
+                }
+            }
+            image.setPixel(x , y, qRgb(currenttiefe,currenttiefe,currenttiefe));
+
+        }
+    }
+    ui ->label_tiefenKarte->setText("Tiefe:" + QString::number(currenttiefe));
+    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
+
 }
