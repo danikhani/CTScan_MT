@@ -1,5 +1,6 @@
 #include "imageloader.h"
 #include "ui_imageloader.h"
+#include <cmath>
 
 ImageLoader::ImageLoader(QWidget *parent) :
     QWidget(parent),
@@ -13,6 +14,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->pushButton_layered, SIGNAL(clicked()), this, SLOT(ReadFile_layered()));
 
     connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(ifTiefenKarte()));
+    connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
 
     //update slider numbers
     connect(ui->slider_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
@@ -31,6 +33,7 @@ ImageLoader::~ImageLoader()
     delete ui;
     delete[] m_pImageData;
     delete[] m_pImageData_130;
+    delete[] m_pTiefenkarte;
 }
 void ImageLoader::MalePixel()
 {
@@ -220,11 +223,13 @@ void ImageLoader::updatedWindowingThreshold(int value)
     ui ->label_threshold->setText("Threshold:" + QString::number(value));
     updateView();
 }
+//this allows us to use tiefenkarte while using a 3d file.
 void ImageLoader::ifTiefenKarte(){
     if (tiefenKarteAllowed){
          updatedTiefenKarte();
     }
 }
+//for updating the tiefenkarte.
 void ImageLoader::updatedTiefenKarte(){
     QImage image(512,512, QImage::Format_RGB32);
     int currenttiefe = 0;
@@ -234,9 +239,11 @@ void ImageLoader::updatedTiefenKarte(){
                 int imageDataPosition =layer*512*512 + x + 512*y;;
                 if(m_pImageData_130[imageDataPosition] > ui->slider_threshold ->value()){
                     currenttiefe = 129-layer;
+                    m_pTiefenkarte[x+ 512*y]=currenttiefe;
                     break;
                 }
             }
+
             image.setPixel(x , y, qRgb(currenttiefe,currenttiefe,currenttiefe));
 
         }
@@ -244,4 +251,22 @@ void ImageLoader::updatedTiefenKarte(){
     ui ->label_tiefenKarte->setText("Tiefe:" + QString::number(currenttiefe));
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 
+}
+//for showing the 3D-Picture
+void ImageLoader::update3DReflection(){
+    updatedTiefenKarte();
+    int sy = 2;
+    int sx = 2;
+    QImage image(512,512, QImage::Format_RGB32);
+
+    for(int y = 1 ; y < 511; y++){
+        for(int x = 1 ; x < 511 ; x++){
+            double tx =m_pTiefenkarte[x-1 + 512*y] - m_pTiefenkarte[x+1 + 512*y];
+            double ty =m_pTiefenkarte[x + 512*(y-1)] - m_pTiefenkarte[x + 512*(y+1)];
+            int iRefl = 255.0*(sx*sy)/std::pow(std::pow(sy*tx,2) + std::pow(sx*ty,2) + std::pow(sy*sx,2),0.5);
+            image.setPixel(x , y, qRgb(iRefl,iRefl,iRefl));
+        }
+    }
+    int a = std::pow(2,2);
+    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }

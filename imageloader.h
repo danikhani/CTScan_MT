@@ -49,6 +49,7 @@ private slots:
     void updatedWindowingThreshold(int value);
     void updatedTiefenKarte();
     void ifTiefenKarte();
+    void update3DReflection();
 };
 
 
