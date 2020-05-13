@@ -27,6 +27,8 @@ private:
     int updatedStart;
     int updatedWidth;
     int currentLayer;
+    int updatedThreshold;
+    bool loaded3D = false;
 
 private slots:
     int windowing( int HU_value, int startValue, int windowWidth);
@@ -36,11 +38,13 @@ private slots:
     //void SetPicture();
     void updatedWindowingStart(int value);
     void updatedWindowingWidth(int value);
+    void updateView();
     void update2DView();
 
     void ReadFile_layered();
     void update3DView();
     void updatedCurrentLayer(int value);
+    void updatedWindowingThreshold(int value);
 };
 
 

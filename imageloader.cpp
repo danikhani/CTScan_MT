@@ -16,6 +16,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
     connect(ui->slider_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
     connect(ui->slider_current_layer, SIGNAL(valueChanged(int)), this, SLOT(updatedCurrentLayer(int)));
+    connect(ui->slider_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingThreshold(int)));
 
     //Speicher der Größe 512*512 reservieren
     m_pImageData = new short[512*512];
@@ -35,7 +36,6 @@ void ImageLoader::MalePixel()
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
     //ui->pushButton_Pixel->setText("Funktioniert");
 }
-
 void ImageLoader::ReadFile()
 {
     // To open a raw file from a dialog
@@ -76,6 +76,7 @@ void ImageLoader::ReadFile()
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
 void ImageLoader::ReadFile_12bit(){
+    loaded3D = false;
     // To open a raw file from a dialog
     QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
     QFile dataFile(imagePath);
@@ -100,9 +101,10 @@ void ImageLoader::ReadFile_12bit(){
     dataFile.close();
 
     //read from the array and make the picture
-    update2DView();
+    updateView();
 }
 void ImageLoader::ReadFile_layered(){
+    loaded3D = true;
     // To open a raw file from a dialog
     QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
     QFile dataFile(imagePath);
@@ -127,7 +129,7 @@ void ImageLoader::ReadFile_layered(){
     dataFile.close();
 
     //read from the array and make the picture
-    update3DView();
+    updateView();
 }
 
 int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
@@ -147,12 +149,20 @@ int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
 void ImageLoader::updatedWindowingStart(int value)
 {
     ui ->label_start->setText("Start:" + QString::number(value));
-    update3DView();
+    updateView();
 }
 void ImageLoader::updatedWindowingWidth(int value)
 {
     ui ->label_width->setText("Width:" + QString::number(value));
-    update3DView();
+    updateView();
+}
+void ImageLoader::updateView(){
+    if (loaded3D){
+        update3DView();
+    }
+    else{
+        update2DView();
+    }
 }
 
 void ImageLoader::update2DView()
@@ -162,9 +172,14 @@ void ImageLoader::update2DView()
     int imageDataPosition = 0;
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
+            imageDataPosition = x + 512*y;
             int iGrauWert = windowing(m_pImageData[imageDataPosition],ui->slider_start->value(),ui->slider_width->value());
-            image.setPixel(x,y,qRgb(iGrauWert,iGrauWert,iGrauWert));
-            imageDataPosition++;
+            if(m_pImageData[imageDataPosition] <= ui->slider_threshold ->value()){
+                image.setPixel(x , y, qRgb(iGrauWert,iGrauWert,iGrauWert));
+            }
+            else{
+                image.setPixel(x , y, qRgb(255,0,0));
+            }
         }
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
@@ -179,8 +194,12 @@ void ImageLoader::update3DView()
         for(int x = 0 ; x < 512 ; x++){
             imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
             int iGrauWert = windowing(m_pImageData_130[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value());
-            image.setPixel(x , y, qRgb(iGrauWert,iGrauWert,iGrauWert));
-            //ui->slider_current_layer->value()* 512 +
+            if(m_pImageData_130[imageDataPosition] <= ui->slider_threshold ->value()){
+                image.setPixel(x , y, qRgb(iGrauWert,iGrauWert,iGrauWert));
+            }
+            else{
+                image.setPixel(x , y, qRgb(255,0,0));
+            }
         }
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
@@ -189,5 +208,10 @@ void ImageLoader::update3DView()
 void ImageLoader::updatedCurrentLayer(int value)
 {
     ui ->label_current_layer->setText("Layer" + QString::number(value));
-    update3DView();
+    updateView();
+}
+void ImageLoader::updatedWindowingThreshold(int value)
+{
+    ui ->label_threshold->setText("Threshold:" + QString::number(value));
+    updateView();
 }
