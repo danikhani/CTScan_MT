@@ -26,32 +26,6 @@
     <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_8bit">
-   <property name="geometry">
-    <rect>
-     <x>580</x>
-     <y>590</y>
-     <width>90</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Load 8 Bit</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_12bit">
-   <property name="geometry">
-    <rect>
-     <x>480</x>
-     <y>590</y>
-     <width>90</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Load 12 Bit</string>
-   </property>
-  </widget>
   <widget class="QSlider" name="slider_start">
    <property name="geometry">
     <rect>

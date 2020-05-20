@@ -21,34 +21,22 @@ public:
 
 private:
     Ui::Widget *ui;
-    char imageData[512*512];
-    short* m_pImageData;
     short* m_pImageData_130;
     int updatedStart;
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    bool loaded3D = false;
     short* m_pTiefenkarte;
-    bool tiefenKarteAllowed = false;
 
 private slots:
     int windowing( int HU_value, int startValue, int windowWidth);
-    void MalePixel();
-    void ReadFile();
-    void ReadFile_12bit();
-    //void SetPicture();
     void updatedWindowingStart(int value);
     void updatedWindowingWidth(int value);
-    void updateView();
-    void update2DView();
-
-    void ReadFile_layered();
+    void ReadFile();
     void update3DView();
     void updatedCurrentLayer(int value);
     void updatedWindowingThreshold(int value);
     void updatedTiefenKarte();
-    void ifTiefenKarte();
     void update3DReflection();
 };
 
