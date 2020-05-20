@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "imageloader.h"
+#include "applicationdata.h"
 
 namespace Ui {
 class SWEIDMT;
@@ -20,6 +21,7 @@ private:
     Ui::SWEIDMT *ui;
     //zeiger for the widget
     ImageLoader *m_pWidget;
+    ApplicationData m_data;
 };
 
 #endif // SWEIDMT_H

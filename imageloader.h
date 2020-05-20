@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include "applicationdata.h"
 namespace Ui {
 class Widget;
 }
@@ -16,8 +17,9 @@ class ImageLoader : public QWidget
     Q_OBJECT
 
 public:
-    explicit ImageLoader(QWidget *parent = 0);
+    explicit ImageLoader(QWidget *parent = nullptr, ApplicationData* pData = nullptr);
     ~ImageLoader();
+    void setData(ApplicationData* pData);
 
 private:
     Ui::Widget *ui;
@@ -27,13 +29,14 @@ private:
     int currentLayer;
     int updatedThreshold;
     short* m_pTiefenkarte;
+    ApplicationData *m_pData;
 
 private slots:
+    void ReadFile();
+    void update3DView();
     int windowing( int HU_value, int startValue, int windowWidth);
     void updatedWindowingStart(int value);
     void updatedWindowingWidth(int value);
-    void ReadFile();
-    void update3DView();
     void updatedCurrentLayer(int value);
     void updatedWindowingThreshold(int value);
     void updatedTiefenKarte();

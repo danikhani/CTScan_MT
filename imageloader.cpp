@@ -2,7 +2,7 @@
 #include "ui_imageloader.h"
 #include <cmath>
 
-ImageLoader::ImageLoader(QWidget *parent) :
+ImageLoader::ImageLoader(QWidget *parent, ApplicationData* pData) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
@@ -28,6 +28,9 @@ ImageLoader::~ImageLoader()
     delete ui;
     delete[] m_pImageData_130;
     delete[] m_pTiefenkarte;
+}
+void ImageLoader::setData(ApplicationData *pData){
+    this->m_pData = pData;
 }
 
 void ImageLoader::ReadFile(){
