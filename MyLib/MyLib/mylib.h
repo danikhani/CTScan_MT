@@ -2,6 +2,7 @@
 #define MYLIB_H
 
 #include "MyLib_global.h"
+//#include "Eigen/Core"
 
 class MYLIB_EXPORT MyLib
 {

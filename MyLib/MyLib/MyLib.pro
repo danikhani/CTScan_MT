@@ -22,6 +22,7 @@ SOURCES += \
 HEADERS += \
     MyLib_global.h \
     mylib.h
+INCLUDEPATH += $$PWD/../eigen-3.3.7
 
 # Default rules for deployment.
 unix {

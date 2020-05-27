@@ -7,7 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
-
+#include "Eigen/Core"
 
 
 class ApplicationData
