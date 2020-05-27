@@ -10,6 +10,9 @@ SWEIDMT::SWEIDMT(QWidget *parent) :
     m_pWidget = new ImageLoader(this);
     // to point the widget zeiger to the object
     ui ->tabWidget->addTab(m_pWidget, "LoadImage");
+    m_pImageLoader = new ApplicationData(this);
+    m_pImageLoader->setData(&m_Data);
+
 
 }
 

@@ -2,7 +2,7 @@
 #include "ui_imageloader.h"
 #include <cmath>
 
-ImageLoader::ImageLoader(QWidget *parent, ApplicationData* pData) :
+ImageLoader::ImageLoader(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
@@ -18,16 +18,12 @@ ImageLoader::ImageLoader(QWidget *parent, ApplicationData* pData) :
     connect(ui->slider_current_layer, SIGNAL(valueChanged(int)), this, SLOT(updatedCurrentLayer(int)));
     connect(ui->slider_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingThreshold(int)));
 
-    //Speicher der Größe 512*512 reservieren
-    m_pImageData_130 = new short[130*512*512];
-    m_pTiefenkarte = new short[512*512];
+
 }
 
 ImageLoader::~ImageLoader()
 {
     delete ui;
-    delete[] m_pImageData_130;
-    delete[] m_pTiefenkarte;
 }
 void ImageLoader::setData(ApplicationData *pData){
     this->m_pData = pData;
@@ -35,41 +31,26 @@ void ImageLoader::setData(ApplicationData *pData){
 
 void ImageLoader::ReadFile(){
     // To open a raw file from a dialog
-    QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
-    QFile dataFile(imagePath);
-    // make it read only
-    bool bFileOpen = dataFile.open(QIODevice::ReadOnly);
-    // give an error iff the file is already in use or not available
-    if (!bFileOpen)
-    {
+    //QString imagePath = QFileDialog::getOpenFileName(this, "open image", "./", "RAW Image Files (*.raw)");
+    QString imagePath = "C:/Users/dania/OneDrive/Dokumente/Dokuments/RWTH/Master/SS20/Softwareentwicklung in der Medizintechnik/Bilder/Kopf_CT_130.raw";
+    bool status = m_pData->uploadImage(imagePath);
+    if (!status){
         QMessageBox::critical(this, "Bro","Cannot open it");
-        return;
     }
-    //now to read the data and save in a slot
-    int iFileSize = dataFile.size();
-    int iNumberBytesRead = dataFile.read((char*)m_pImageData_130,130*512*512*sizeof(short));
-
-    if (iFileSize != iNumberBytesRead)
-    {
-        QMessageBox::critical(this, "Bro","The Pixel numerbs are not equal");
-        return;
-    }
-    // Close the data
-    dataFile.close();
-
     //read from the array and make the picture
     update3DView();
 }
 void ImageLoader::update3DView()
 {
+    const short* pImage = m_pData->getImage();
     //read from the array and make the picture
     QImage image(512,512, QImage::Format_RGB32);
     int imageDataPosition = 0;
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
             imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
-            int iGrauWert = windowing(m_pImageData_130[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value());
-            if(m_pImageData_130[imageDataPosition] <= ui->slider_threshold ->value()){
+            int iGrauWert = MyLib::windowing(pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value());
+            if(pImage[imageDataPosition] <= ui->slider_threshold ->value()){
                 image.setPixel(x , y, qRgb(iGrauWert,iGrauWert,iGrauWert));
             }
             else{
@@ -79,7 +60,7 @@ void ImageLoader::update3DView()
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
-int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
+/*int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
     int iGrauwert;
     //fensterung berechnen
     if(Hu_value<startValue){
@@ -93,6 +74,7 @@ int ImageLoader::windowing(int Hu_value, int startValue, int windowWidth){
     }
     return iGrauwert;
 }
+*/
 void ImageLoader::updatedWindowingStart(int value)
 {
     ui ->label_start->setText("Start:" + QString::number(value));
@@ -113,15 +95,18 @@ void ImageLoader::updatedWindowingThreshold(int value)
     ui ->label_threshold->setText("Threshold:" + QString::number(value));
     update3DView();
 }
+
 //for updating the tiefenkarte.
+/*
 void ImageLoader::updatedTiefenKarte(){
     QImage image(512,512, QImage::Format_RGB32);
+    const short* pImage = m_pData->getImage();
     int currenttiefe = 0;
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
             for(int layer = 129; layer >= 0; layer--){
                 int imageDataPosition =layer*512*512 + x + 512*y;;
-                if(m_pImageData_130[imageDataPosition] > ui->slider_threshold ->value()){
+                if(pImage[imageDataPosition] > ui->slider_threshold ->value()){
                     currenttiefe = 129-layer;
                     m_pTiefenkarte[x+ 512*y]=currenttiefe;
                     break;
@@ -138,6 +123,7 @@ void ImageLoader::updatedTiefenKarte(){
 }
 //for showing the 3D-Picture
 void ImageLoader::update3DReflection(){
+    const short* pImage = m_pData->getImage();
     updatedTiefenKarte();
     int sy = 2;
     int sx = 2;
@@ -145,11 +131,14 @@ void ImageLoader::update3DReflection(){
 
     for(int y = 1 ; y < 511; y++){
         for(int x = 1 ; x < 511 ; x++){
-            double tx =m_pTiefenkarte[x-1 + 512*y] - m_pTiefenkarte[x+1 + 512*y];
-            double ty =m_pTiefenkarte[x + 512*(y-1)] - m_pTiefenkarte[x + 512*(y+1)];
+            double tx =pImage[x-1 + 512*y] - m_pTiefenkarte[x+1 + 512*y];
+            double ty =pImage[x + 512*(y-1)] - m_pTiefenkarte[x + 512*(y+1)];
             int iRefl = 255.0*(sx*sy)/std::pow(std::pow(sy*tx,2) + std::pow(sx*ty,2) + std::pow(sy*sx,2),0.5);
             image.setPixel(x , y, qRgb(iRefl,iRefl,iRefl));
         }
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
+*/
+void ImageLoader::updatedTiefenKarte(){}
+void ImageLoader::update3DReflection(){}

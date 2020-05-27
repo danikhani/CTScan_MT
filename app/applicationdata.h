@@ -1,6 +1,7 @@
 #ifndef APPLICATIONDATA_H
 #define APPLICATIONDATA_H
 #include <QString>
+#include <QFile>
 
 
 class ApplicationData
@@ -12,6 +13,7 @@ public:
 
     const short* getImage();
     const short* getDepthMap();
+    void setImage(short* x);
 
 private:
     short* m_pTiefenkarte;
