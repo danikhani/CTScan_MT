@@ -26,18 +26,16 @@ public:
 
 private:
     Ui::ImageLoader *ui;
-    short* m_pImageData_130;
     int updatedStart;
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    short* m_pTiefenkarte;
     ApplicationData *m_pData;
 
 private slots:
     void ReadFile();
     void update3DView();
-    //int windowing( int HU_value, int startValue, int windowWidth);
+
     void updatedWindowingStart(int value);
     void updatedWindowingWidth(int value);
     void updatedCurrentLayer(int value);

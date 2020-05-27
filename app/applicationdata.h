@@ -2,6 +2,12 @@
 #define APPLICATIONDATA_H
 #include <cmath>
 #include <QString>
+#include <QWidget>
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDebug>
+
 
 
 class ApplicationData
