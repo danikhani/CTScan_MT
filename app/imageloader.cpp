@@ -1,6 +1,5 @@
 #include "imageloader.h"
 #include "ui_imageloader.h"
-#include <cmath>
 
 ImageLoader::ImageLoader(QWidget *parent) :
     QWidget(parent),

@@ -20,7 +20,7 @@ public:
 private:
     Ui::sweidmt *ui;
     //zeiger for the widget
-    ImageLoader *m_pWidget;
-    ApplicationData m_data;
+    ImageLoader *m_pImageLoader;
+    ApplicationData m_Data;
 };
 #endif // SWEIDMT_H

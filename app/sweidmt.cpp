@@ -7,15 +7,16 @@ sweidmt::sweidmt(QWidget *parent)
 {
     ui->setupUi(this);
     //this will make the widget object
-    m_pWidget = new ImageLoader(this);
+    m_pImageLoader = new ImageLoader(this);
     // to point the widget zeiger to the object
-    ui ->tabWidget->addTab(m_pWidget, "LoadImage");
+    ui ->tabWidget->addTab(m_pImageLoader, "LoadImage");
+    m_pImageLoader->setData(&m_Data);
 }
 
 sweidmt::~sweidmt()
 {
     delete ui;
     // this deletes the widget object
-    delete m_pWidget;
+    delete m_pImageLoader;
 }
 

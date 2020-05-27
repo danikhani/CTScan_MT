@@ -2,7 +2,7 @@
 #define IMAGELOADER_H
 
 #include <QWidget>
-#include <QWidget>
+#include <cmath>
 //to add files from desktop
 #include <QFile>
 #include <QFileDialog>
