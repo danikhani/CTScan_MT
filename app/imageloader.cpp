@@ -33,9 +33,9 @@ ImageLoader::~ImageLoader()
 }
 
 
-//void ImageLoader::setData(ApplicationData *pData){
- //   this->m_pData = pData;
-//}
+void ImageLoader::setData(ApplicationData *pData){
+   this->m_pData = pData;
+}
 
 void ImageLoader::ReadFile(){
     // To open a raw file from a dialog
