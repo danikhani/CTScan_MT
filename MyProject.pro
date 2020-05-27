@@ -1,3 +1,3 @@
 TEMPLATE = subdirs 
-SUBDIRS += app/Medizintechnik.pro \
+SUBDIRS += app/sweidmt.pro \
     MyLib/MyLib

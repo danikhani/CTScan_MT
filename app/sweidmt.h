@@ -3,25 +3,23 @@
 
 #include <QWidget>
 #include "imageloader.h"
-#include "applicationdata.h"
 
-namespace Ui {
-class SWEIDMT;
-}
+QT_BEGIN_NAMESPACE
+namespace Ui { class sweidmt; }
+QT_END_NAMESPACE
 
-class SWEIDMT : public QWidget
+class sweidmt : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SWEIDMT(QWidget *parent = nullptr);
-    ~SWEIDMT();
+    sweidmt(QWidget *parent = nullptr);
+    ~sweidmt();
 
 private:
-    Ui::SWEIDMT *ui;
+    Ui::sweidmt *ui;
     //zeiger for the widget
     ImageLoader *m_pWidget;
-    ApplicationData m_data;
+    //ApplicationData m_data;
 };
-
 #endif // SWEIDMT_H

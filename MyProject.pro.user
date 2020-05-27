@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.1, 2020-05-27T08:08:00. -->
+<!-- Written by QtCreator 4.11.1, 2020-05-27T09:01:58. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -287,8 +287,8 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Users/dania/OneDrive/Dokumente/Dokuments/RWTH/Master/SS20/Softwareentwicklung in der Medizintechnik/QT_Repo/app/Medizintechnik.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/Users/dania/OneDrive/Dokumente/Dokuments/RWTH/Master/SS20/Softwareentwicklung in der Medizintechnik/QT_Repo/app/Medizintechnik.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/Users/dania/OneDrive/Dokumente/Dokuments/RWTH/Master/SS20/Softwareentwicklung in der Medizintechnik/QT_Repo/app/sweidmt.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/Users/dania/OneDrive/Dokumente/Dokuments/RWTH/Master/SS20/Softwareentwicklung in der Medizintechnik/QT_Repo/app/sweidmt.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>

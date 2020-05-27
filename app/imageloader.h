@@ -1,16 +1,18 @@
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef IMAGELOADER_H
+#define IMAGELOADER_H
 
+#include <QWidget>
 #include <QWidget>
 //to add files from desktop
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
-#include "applicationdata.h"
+//#include "applicationdata.h"
 #include "mylib.h"
+
 namespace Ui {
-class Widget;
+class ImageLoader;
 }
 
 class ImageLoader : public QWidget
@@ -19,16 +21,17 @@ class ImageLoader : public QWidget
 
 public:
     explicit ImageLoader(QWidget *parent = nullptr);
-    void setData(ApplicationData* pData);
     ~ImageLoader();
 
 private:
-    Ui::Widget *ui;
+    Ui::ImageLoader *ui;
+    short* m_pImageData_130;
     int updatedStart;
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    ApplicationData *m_pData;
+    short* m_pTiefenkarte;
+
 
 private slots:
     void ReadFile();
@@ -42,5 +45,4 @@ private slots:
     void update3DReflection();
 };
 
-
-#endif // WIDGET_H
+#endif // IMAGELOADER_H
