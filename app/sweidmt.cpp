@@ -11,6 +11,10 @@ sweidmt::sweidmt(QWidget *parent)
     // to point the widget zeiger to the object
     ui ->tabWidget->addTab(m_pImageLoader, "LoadImage");
     m_pImageLoader->setData(&m_Data);
+
+    connect(m_pImageLoader, SIGNAL(LOG(QString)), this, SLOT(LOG(QString)));
+
+
 }
 
 sweidmt::~sweidmt()
@@ -18,5 +22,9 @@ sweidmt::~sweidmt()
     delete ui;
     // this deletes the widget object
     delete m_pImageLoader;
+}
+
+void sweidmt::LOG(QString str) {
+    ui->textEdit->append(str);
 }
 

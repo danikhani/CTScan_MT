@@ -32,7 +32,7 @@
   <widget class="QPushButton" name="pushButton_tiefenKarte">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>260</x>
      <y>590</y>
      <width>90</width>
      <height>28</height>
@@ -45,7 +45,7 @@
   <widget class="QSlider" name="slider_threshold">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>20</x>
      <y>570</y>
      <width>421</width>
      <height>22</height>
@@ -70,7 +70,7 @@
   <widget class="QLabel" name="label_image_2">
    <property name="geometry">
     <rect>
-     <x>60</x>
+     <x>20</x>
      <y>0</y>
      <width>512</width>
      <height>512</height>
@@ -83,7 +83,7 @@
   <widget class="QLabel" name="label_tiefenKarte">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>20</x>
      <y>600</y>
      <width>111</width>
      <height>16</height>
@@ -96,7 +96,7 @@
   <widget class="QLabel" name="label_threshold">
    <property name="geometry">
     <rect>
-     <x>520</x>
+     <x>460</x>
      <y>570</y>
      <width>111</width>
      <height>16</height>
@@ -109,7 +109,7 @@
   <widget class="QSlider" name="slider_start">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>20</x>
      <y>520</y>
      <width>421</width>
      <height>22</height>
@@ -134,7 +134,7 @@
   <widget class="QSlider" name="slider_width">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>20</x>
      <y>545</y>
      <width>421</width>
      <height>21</height>
@@ -156,7 +156,7 @@
   <widget class="QLabel" name="label_start">
    <property name="geometry">
     <rect>
-     <x>520</x>
+     <x>460</x>
      <y>520</y>
      <width>121</width>
      <height>20</height>
@@ -172,7 +172,7 @@
   <widget class="QPushButton" name="pushButton_reflect">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>160</x>
      <y>590</y>
      <width>90</width>
      <height>28</height>
@@ -185,7 +185,7 @@
   <widget class="QLabel" name="label_width">
    <property name="geometry">
     <rect>
-     <x>520</x>
+     <x>460</x>
      <y>550</y>
      <width>111</width>
      <height>20</height>
@@ -211,7 +211,7 @@
   <widget class="QPushButton" name="pushButton_layered">
    <property name="geometry">
     <rect>
-     <x>430</x>
+     <x>370</x>
      <y>590</y>
      <width>90</width>
      <height>28</height>
@@ -219,6 +219,16 @@
    </property>
    <property name="text">
     <string>Load 3D</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>490</y>
+     <width>191</width>
+     <height>131</height>
+    </rect>
    </property>
   </widget>
  </widget>

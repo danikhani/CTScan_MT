@@ -36,6 +36,7 @@ void ImageLoader::ReadFile(){
     //update 3Dview
     if(status){
         update3DView();
+        emit LOG("Das ist ein Beispieltext");
     }
     else{
         QMessageBox::critical(this, "Cant Load","Try again please");

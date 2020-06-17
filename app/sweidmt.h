@@ -17,10 +17,15 @@ public:
     sweidmt(QWidget *parent = nullptr);
     ~sweidmt();
 
+
 private:
     Ui::sweidmt *ui;
     //zeiger for the widget
     ImageLoader *m_pImageLoader;
     ApplicationData m_Data;
+
+private slots:
+    void LOG(QString str);
+
 };
 #endif // SWEIDMT_H

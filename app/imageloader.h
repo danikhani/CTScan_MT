@@ -23,6 +23,8 @@ public:
     explicit ImageLoader(QWidget *parent = nullptr);
     ~ImageLoader();
     void setData(ApplicationData* pData);
+signals:
+    void LOG(QString str);
 
 private:
     Ui::ImageLoader *ui;
@@ -43,6 +45,8 @@ private slots:
     void updatedWindowingThreshold(int value);
     void updatedTiefenKarte();
     void update3DReflection();
+
+
 };
 
 #endif // IMAGELOADER_H
