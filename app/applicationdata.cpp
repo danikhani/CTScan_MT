@@ -5,6 +5,13 @@ ApplicationData::ApplicationData()
     m_pImageData = new short[130*512*512];
     m_pTiefenkarte = new short[512*512];
 }
+
+ApplicationData::~ApplicationData()
+{
+    delete[] m_pImageData;
+    delete[] m_pTiefenkarte;
+}
+
 // return for the arrays.
 const short* ApplicationData::getImage(){
     return m_pImageData;

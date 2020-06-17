@@ -26,11 +26,12 @@ public:
 
 private:
     Ui::ImageLoader *ui;
+    ApplicationData *m_pData;
     int updatedStart;
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    ApplicationData *m_pData;
+
 
 private slots:
     void ReadFile();

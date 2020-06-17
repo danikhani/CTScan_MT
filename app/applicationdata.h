@@ -14,6 +14,7 @@ class ApplicationData
 {
 public:
     ApplicationData();
+    ~ApplicationData();
     bool uploadImage(QString path);
     bool calculateDepthMap(int threshold);
     const short* getImage();
@@ -24,9 +25,9 @@ private:
     short* m_pImageData;
     short* m_pTiefenkarte;
 
-    void update3DView();
-    void updatedTiefenKarte();
-    void update3DReflection();
+    //void update3DView();
+    //void updatedTiefenKarte();
+    //void update3DReflection();
 };
 
 #endif // APPLICATIONDATA_H
