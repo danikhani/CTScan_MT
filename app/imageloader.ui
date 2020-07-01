@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>770</width>
-    <height>628</height>
+    <width>777</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QSlider" name="slider_current_layer">
    <property name="geometry">
     <rect>
-     <x>700</x>
+     <x>670</x>
      <y>50</y>
      <width>22</width>
      <height>391</height>
@@ -229,6 +229,38 @@
      <width>191</width>
      <height>131</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QSlider" name="slider_point1_z">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>50</y>
+     <width>22</width>
+     <height>391</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>129</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+  </widget>
+  <widget class="QSlider" name="slider_point2_z">
+   <property name="geometry">
+    <rect>
+     <x>740</x>
+     <y>50</y>
+     <width>22</width>
+     <height>391</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>129</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
    </property>
   </widget>
  </widget>

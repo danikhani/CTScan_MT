@@ -23,6 +23,7 @@ private:
     //zeiger for the widget
     ImageLoader *m_pImageLoader;
     ApplicationData m_Data;
+    //image3D imageData3D;
 
 private slots:
     void LOG(QString str);
