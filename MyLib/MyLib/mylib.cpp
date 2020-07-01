@@ -2,8 +2,9 @@
 
 MyLib::MyLib()
 {}
-int MyLib::windowing(int HU_value, int startValue, int windowWidth){
-    int iGrauwert;
+
+int MyLib::windowing(int HU_value, int startValue, int windowWidth, int& iGrauwert){
+   int errorStatus = 0;
     //fensterung berechnen
     if(HU_value<startValue){
         iGrauwert = 0;
@@ -14,5 +15,6 @@ int MyLib::windowing(int HU_value, int startValue, int windowWidth){
     else{
         iGrauwert =  255.0/windowWidth * (HU_value-startValue);
     }
-    return iGrauwert;
+    return errorStatus;
+
 }

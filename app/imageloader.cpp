@@ -49,12 +49,13 @@ void ImageLoader::update3DView()
     const short* pImage = m_pData->getImage();
     QImage image(512,512, QImage::Format_RGB32);
     int imageDataPosition = 0;
+    int iGrauwert;
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
             imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
-            int iGrauWert = MyLib::windowing(pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value());
+            int windowingError = MyLib::windowing(pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value(),iGrauwert);
             if(pImage[imageDataPosition] <= ui->slider_threshold ->value()){
-                image.setPixel(x , y, qRgb(iGrauWert,iGrauWert,iGrauWert));
+                image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
             }
             else{
                 image.setPixel(x , y, qRgb(255,0,0));

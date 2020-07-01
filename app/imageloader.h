@@ -22,7 +22,7 @@ class ImageLoader : public QWidget
 public:
     explicit ImageLoader(QWidget *parent = nullptr);
     ~ImageLoader();
-    void setData(ApplicationData* pData);
+    void setData(ApplicationData *pData);
 signals:
     void LOG(QString str);
 

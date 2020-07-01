@@ -39,6 +39,8 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../MyLib/MyLib/release
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../MyLib/MyLib/debug/ -lMyLib
 else:unix: LIBS += -L$$OUT_PWD/../MyLib/MyLib/ -lMyLib
 
-INCLUDEPATH += $$PWD/../MyLib/MyLib\
-$$PWD/../eigen-3.3.7
+INCLUDEPATH += $$PWD/../MyLib/MyLib \
+               $$PWD/../eigen-3.3.7
 DEPENDPATH += $$PWD/../MyLib/MyLib
+
+CONFIG += warn_off
