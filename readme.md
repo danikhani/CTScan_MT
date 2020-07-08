@@ -12,9 +12,9 @@ Eigen 3.3.7
 
 ### Documentation
 
-Location of the Lastenheft:
+Location of Location of [Lastenheft](Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md):
 
-Location of Pflichtenheft:
+Location of [Pflichenheft](Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md):
 
 ### Project structure
 
