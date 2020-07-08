@@ -13,13 +13,6 @@
 #include <QMouseEvent>
 #include <QDebug>
 
-struct Point
-{
-    int x;
-    int y;
-    int z;
-};
-
 namespace Ui {
 class ImageLoader;
 }
@@ -43,8 +36,8 @@ private:
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    Point localPoint1;
-    Point localPoint2;
+    Eigen::Vector3d localPoint_XY_1;
+    Eigen::Vector3d localPoint_XY_2;
     int currentPoint;
 
 
@@ -57,8 +50,8 @@ private slots:
     void updatedWindowingWidth(int value);
     void updatedCurrentLayer(int value);
     void updatedWindowingThreshold(int value);
-    void updatedTiefenKarte();
-    void update3DReflection();
+    //void updatedTiefenKarte();
+    //void update3DReflection();
     void mousePressEvent(QMouseEvent *event);
     void updatedPoint1Z(int value);
     void updatedPoint2Z(int value);

@@ -2,17 +2,21 @@
 
 ApplicationData::ApplicationData()
 {
-    //m_pImageData = new short[130*512*512];
-    m_pTiefenkarte = new short[512*512];
-    //image3D imageData3D = new image3D();
-    imageData3D.pImage = new short[130*512*512];
-    //imageData3D.pImage = new short[130][512][512];
+    imageData3D.pImage = new short[512*512*256];
+    imageData3D.width = 512;
+    imageData3D.height = 512;
+    imageData3D.slices = 256;
+    // size of everypixel in mm
+    imageData3D.pixelSpacingXY= 1.2695;
+    imageData3D.pixelSpacingZ = 2.0000;
+
+    //m_pTiefenkarte = new short[512*512];
 }
 
 ApplicationData::~ApplicationData()
 {
 //    delete[] m_pImageData;
-    delete[] m_pTiefenkarte;
+    //delete[] m_pTiefenkarte;
     delete[] imageData3D.pImage;
     //delete[] imageData3D;
 
@@ -26,9 +30,9 @@ const image3D ApplicationData::getImage3D(){
 //    return m_pImageData;
 //
 //}
-const short* ApplicationData:: getDepthMap(){
-    return m_pTiefenkarte;
-}
+//const short* ApplicationData::getDepthMap(){
+//    return m_pTiefenkarte;
+//}
 
 
 bool ApplicationData::uploadImage(QString path){
@@ -43,8 +47,7 @@ bool ApplicationData::uploadImage(QString path){
     //now to read the data and save in a slot
     int iFileSize = dataFile.size();
 
-    int iNumberBytesRead = dataFile.read((char*)imageData3D.pImage,130*512*512*sizeof(short));
-    //imageData3D.pImage = m_pImageData;
+    int iNumberBytesRead = dataFile.read((char*)imageData3D.pImage,imageData3D.width*imageData3D.height*imageData3D.slices*sizeof(short));
 
     if (iFileSize != iNumberBytesRead)
     {
@@ -56,6 +59,7 @@ bool ApplicationData::uploadImage(QString path){
     return true;
 }
 
+/**
 bool ApplicationData::calculateDepthMap(int threshold){
     int currenttiefe = 0;
     for(int y = 0 ; y < 512; y++){
@@ -74,3 +78,4 @@ bool ApplicationData::calculateDepthMap(int threshold){
 
     return status;
 }
+**/

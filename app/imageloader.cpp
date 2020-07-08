@@ -13,14 +13,11 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
 
     //update slider numbers
-    connect(ui->slider_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
-    connect(ui->slider_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
-    connect(ui->slider_current_layer, SIGNAL(valueChanged(int)), this, SLOT(updatedCurrentLayer(int)));
-    connect(ui->slider_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingThreshold(int)));
+    connect(ui->slider_xy_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
+    connect(ui->slider_xy_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
+    connect(ui->slider_xy_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedCurrentLayer(int)));
+    connect(ui->slider_xy_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingThreshold(int)));
     //slider for the point z value
-    connect(ui->slider_point1_z, SIGNAL(valueChanged(int)), this, SLOT(updatedPoint1Z(int)));
-    connect(ui->slider_point2_z, SIGNAL(valueChanged(int)), this, SLOT(updatedPoint2Z(int)));
-
     currentPoint = 2;
 
 }
@@ -57,15 +54,14 @@ void ImageLoader::update3DView()
     QImage image(512,512, QImage::Format_RGB32);
     int imageDataPosition = 0;
     int iGrauwert;
-    //short tryvoxel[511][511][129];
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
-            imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
+            imageDataPosition = ui->slider_xy_currentLayer->value()*512*512 + x + 512*y;
             //tryvoxel[x][y][ui->slider_current_layer->value()] = tmp_imageData3D.pImage[imageDataPosition];
 
-            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value(),iGrauwert);
-            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_threshold ->value()){
-                image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
+            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_xy_start->value(),ui->slider_xy_width ->value(),iGrauwert);
+            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_xy_threshold ->value()){
+                image.setPixel(x , y,qRgb(iGrauwert, iGrauwert, iGrauwert));
             }
             else{
                 image.setPixel(x , y, qRgb(255,0,0));
@@ -73,42 +69,111 @@ void ImageLoader::update3DView()
         }
     }
 
-    for (int z = 0; z < 129; z++)
-    {
-       for (int y = 0; y < 511; y++) {
-
-           for (int x = 0; x < 511; x++)
-           {
-              //qDebug( tryvoxel[x][y][z] + " " );
-           }
-       }
-    }
-
     qDebug( "C Style Debug Message" );
-    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
+    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 }
 
 void ImageLoader::updatedWindowingStart(int value)
 {
-    ui ->label_start->setText("Start:" + QString::number(value));
+    ui ->label_xy_start->setText("Start:" + QString::number(value));
     update3DView();
 }
 void ImageLoader::updatedWindowingWidth(int value)
 {
-    ui ->label_width->setText("Width:" + QString::number(value));
+    ui ->label_xy_width->setText("Width:" + QString::number(value));
     update3DView();
 }
 void ImageLoader::updatedCurrentLayer(int value)
 {
-    ui ->label_current_layer->setText("Layer" + QString::number(value));
+    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
     update3DView();
 }
 void ImageLoader::updatedWindowingThreshold(int value)
 {
-    ui ->label_threshold->setText("Threshold:" + QString::number(value));
+    ui ->label_xy_threshold->setText("Threshold:" + QString::number(value));
     update3DView();
 }
 
+void ImageLoader::mousePressEvent(QMouseEvent *event)
+{
+    int x = event->x();
+    int y = event->y();
+    QPoint globalPos;
+    globalPos = event->pos();
+    QPoint localPos;
+    localPos = ui->label_xy_image->mapFromParent(globalPos);
+    if (ui->label_xy_image->rect().contains(localPos)){
+        // check for risks. for choosing a point
+        if(currentPoint ==2){
+            localPoint_XY_1.x() = localPos.x();
+            localPoint_XY_1.y() = localPos.y();
+            //localPoint1.z = ui->slider_point1_z->value();
+            currentPoint = 1;
+            drawLine();
+        }
+        else if(currentPoint == 1){
+            localPoint_XY_2.x() = localPos.x();
+            localPoint_XY_2.y() = localPos.y();
+            //localPoint2.z = ui->slider_point2_z->value();;
+            currentPoint = 2;
+            drawLine();
+        }
+    }
+}
+
+void ImageLoader::drawLine()
+{
+
+    /**
+    float tanLine = (firstPointXY.y - secPointXY.y)/(firstPointXY.x - secPointXY.x);
+    for (float i = 0; i < 1000; i++) {
+        float dx = firstPointXY.x + (secPointXY.x - firstPointXY.x)/1000.0*i; // interpolate betwenn the two points
+        float dy = (dx-firstPointXY.x)* tanLine + firstPointXY.y;
+        int x = (int)dx;
+        int y = (int)dy;
+        imageXY.setPixel(x,y,qRgb(255, 255, 0));
+    }
+    **/
+
+    //read from the array and make the picture
+    const image3D tmp_imageData3D = m_pData->getImage3D();
+    QImage image(512,512, QImage::Format_RGB32);
+    int imageDataPosition = 0;
+    int iGrauwert;
+    for(int y = 0 ; y < 512; y++){
+        for(int x = 0 ; x < 512 ; x++){
+            imageDataPosition = ui->slider_xy_currentLayer->value()*512*512 + x + 512*y;
+            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_xy_start->value(),ui->slider_xy_width ->value(),iGrauwert);
+            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_xy_threshold ->value()){
+                image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
+            }
+            else{
+                image.setPixel(x , y, qRgb(255,0,0));
+            }
+            if(y == ((localPoint_XY_2.y() - localPoint_XY_1.y())/(localPoint_XY_2.x() - localPoint_XY_1.x())*(x-localPoint_XY_1.x())+localPoint_XY_1.y())){
+                image.setPixel(x , y, qRgb(255,0,0));
+            }
+        }
+    }
+    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
+}
+/**
+drawline function:
+get localPoint1.x
+**/
+void ImageLoader::updatedPoint1Z(int value)
+{
+    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
+    update3DView();
+}
+void ImageLoader::updatedPoint2Z(int value)
+{
+    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
+    update3DView();
+}
+
+
+/**
 //for updating the tiefenkarte.
 void ImageLoader::updatedTiefenKarte(){
     //load data to threshhold
@@ -169,72 +234,7 @@ void ImageLoader::update3DReflection(){
     }
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
-
-void ImageLoader::mousePressEvent(QMouseEvent *event)
-{
-    int x = event->x();
-    int y = event->y();
-    QPoint globalPos;
-    globalPos = event->pos();
-    QPoint localPos;
-    localPos = ui->label_image_2->mapFromParent(globalPos);
-    if (ui->label_image_2->rect().contains(localPos)){
-        // check for risks. for choosing a point
-        if(currentPoint ==2){
-            localPoint1.x = localPos.x();
-            localPoint1.y = localPos.y();
-            //localPoint1.z = ui->slider_point1_z->value();
-            currentPoint = 1;
-            drawLine();
-        }
-        else if(currentPoint == 1){
-            localPoint2.x = localPos.x();
-            localPoint2.y = localPos.y();
-            //localPoint2.z = ui->slider_point2_z->value();;
-            currentPoint = 2;
-            drawLine();
-        }
-    }
-}
-
-void ImageLoader::drawLine()
-{
-    //read from the array and make the picture
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    QImage image(512,512, QImage::Format_RGB32);
-    int imageDataPosition = 0;
-    int iGrauwert;
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
-            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value(),iGrauwert);
-            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_threshold ->value()){
-                image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
-            }
-            else{
-                image.setPixel(x , y, qRgb(255,0,0));
-            }
-            if(y == ((localPoint2.y - localPoint1.y)/(localPoint2.x - localPoint1.x)*(x-localPoint1.x)+localPoint1.y)){
-                image.setPixel(x , y, qRgb(255,0,0));
-            }
-        }
-    }
-    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
-}
-/**
-drawline function:
-get localPoint1.x
 **/
-void ImageLoader::updatedPoint1Z(int value)
-{
-    ui ->label_current_layer->setText("Layer" + QString::number(value));
-    update3DView();
-}
-void ImageLoader::updatedPoint2Z(int value)
-{
-    ui ->label_current_layer->setText("Layer" + QString::number(value));
-    update3DView();
-}
 
 
 /**

@@ -18,7 +18,7 @@ Location of Pflichtenheft:
 
 ### Project structure
 
-Applicationdata will save the image data
+app/Applicationdata will save the image data
 Mylib is for using the codes over and over
 
 ## Authors
