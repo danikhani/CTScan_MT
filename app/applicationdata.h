@@ -27,12 +27,6 @@ private:
     short *m_pTiefenkarte;
     //image3D *imageData3D;
     image3D imageData3D;
-
-
-
-    //void update3DView();
-    //void updatedTiefenKarte();
-    //void update3DReflection();
 };
 
 #endif // APPLICATIONDATA_H
