@@ -45,17 +45,34 @@ private:
 private slots:
     void ReadFile();
     void update3DView();
+    //static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
+    //void updateView(int depth, int startValue, int windowWidth, int threshold, image3D tmp_imageData3D, QImage& image);
+    void updateAllViews();
+    void updateXYView();
+    void updateXZView();
 
-    void updatedWindowingStart(int value);
-    void updatedWindowingWidth(int value);
-    void updatedCurrentLayer(int value);
-    void updatedWindowingThreshold(int value);
+
+
     //void updatedTiefenKarte();
     //void update3DReflection();
     void mousePressEvent(QMouseEvent *event);
     void updatedPoint1Z(int value);
     void updatedPoint2Z(int value);
     void drawLine();
+
+    // show values of xy sliders
+    void updatedXYWindowingStart(int value);
+    void updatedXYWindowingWidth(int value);
+    void updatedXYCurrentLayer(int value);
+    void updatedXYWindowingThreshold(int value);
+
+    // show values of xz sliders
+    void updatedXZWindowingStart(int value);
+    void updatedXZWindowingWidth(int value);
+    void updatedXZCurrentLayer(int value);
+    void updatedXZWindowingThreshold(int value);
+
+
 
 
 };

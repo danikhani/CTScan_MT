@@ -13,29 +13,24 @@ struct image3D{
     double pixelSpacingZ;
     short *pImage;
 };
-struct image2D{
+struct image2D // structure where the reconstructed slice will be stored. Memory will be automaticall allocated whene initialized
+{
 public:
-    image2D(int w,int h)
-    {
-        pImage=new short[w*h];
-        width=w ;height=h;
-        /**
-         * @brief void *memset(void *adres, int zeichen, size_t n);
-         * Mit der Funktion memset() wird der Wert von zeichen in jedes der ersten n Zeichen des Speicherbereichs mit der Adresse adres geschrieben
-         */
-        memset(pImage,0,w*h*sizeof(short));
-    };
+    image2D(int w, int h){pImage = new short[w*h]; width = w; height = h; memset(pImage, 0, w*h*sizeof(short));};
     ~image2D(){delete pImage;};
+
     int width;
     int height;
-    short *pImage;
-};
+    short* pImage;
+} ;
+
 struct Reconstruction{
-    Eigen::Vector3d pos;
-    Eigen::Vector3d xdir;
-    Eigen::Vector3d ydir;
-    double scale;
+    Eigen::Vector3d pos; // position of the center of the slice within the voxel dataset in voxel unit
+    Eigen::Vector3d xdir; // direction of the x-axis of the reconstructed slice within the voxel dataset
+    Eigen::Vector3d ydir; // direction of the y-axis of the reconstructed slice within the voxel dataset
+    double scale; // Scaling, such as 1.0 reconstructs an image where 1 pixel corresponds to 1mm
 };
+
 class MYLIB_EXPORT MyLib
 {
 public:

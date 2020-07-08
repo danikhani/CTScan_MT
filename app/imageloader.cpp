@@ -12,12 +12,16 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(updatedTiefenKarte()));
     connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
 
-    //update slider numbers
-    connect(ui->slider_xy_start, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingStart(int)));
-    connect(ui->slider_xy_width, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingWidth(int)));
-    connect(ui->slider_xy_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedCurrentLayer(int)));
-    connect(ui->slider_xy_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedWindowingThreshold(int)));
+    //xy picture sliders and labels
+    connect(ui->slider_xy_start, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingStart(int)));
+    connect(ui->slider_xy_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingWidth(int)));
+    connect(ui->slider_xy_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedXYCurrentLayer(int)));
+    connect(ui->slider_xy_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingThreshold(int)));
     //slider for the point z value
+    connect(ui->slider_xz_start, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingStart(int)));
+    connect(ui->slider_xz_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingWidth(int)));
+    connect(ui->slider_xz_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedXZCurrentLayer(int)));
+    connect(ui->slider_xz_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
     currentPoint = 2;
 
 }
@@ -38,14 +42,107 @@ void ImageLoader::ReadFile(){
     // give files to m-pdata
     bool status = m_pData->uploadImage(imagePath);
     //update 3Dview
-    if(status){
-        update3DView();
-        emit LOG("Das ist ein Beispieltext");
+
+    if(status == 1){
+        updateAllViews();
+        emit LOG("Image Loaded");
     }
     else{
         QMessageBox::critical(this, "Cant Load","Try again please");
     }
 }
+//updateView(int width, int height, int startValue, int windowWidth, image3D tmp_im3D, QImage image);
+void ImageLoader::updateAllViews(){
+    updateXZView();
+    updateXYView();
+   }
+void ImageLoader::updateXYView(){
+    //loading data from application data
+    const image3D tmp_imageData3D = m_pData->getImage3D();
+    //ui elements
+    QImage image(512,512, QImage::Format_RGB32);
+    int startSlider = ui->slider_xy_start->value();
+    int widthSlider = ui->slider_xy_width ->value();
+    int currentLayerSlider = ui->slider_xy_currentLayer->value();
+    int thresholdSlider = ui->slider_xy_threshold ->value();
+    // values for the algorithem
+    int imageDataPosition = 0;
+    int iGrauwert;
+    int hu_value;
+    int number_HU_OutOfRange = 0;
+    int number_windowing_OutOfRange = 0;
+    for(int y = 0 ; y < tmp_imageData3D.width; y++){
+        for(int x = 0 ; x < tmp_imageData3D.height ; x++){
+             imageDataPosition = x * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*currentLayerSlider ;
+             hu_value = tmp_imageData3D.pImage[imageDataPosition];
+             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
+             if(windowingError == -1){
+                 number_HU_OutOfRange++;
+             }
+             if(windowingError == -2){
+                 number_windowing_OutOfRange++;
+             }
+             if(hu_value <= thresholdSlider){
+                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
+             }else{
+                 image.setPixel(y, x, qRgb(255,0,0));
+             }
+        }
+    }
+    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
+
+    QString outOfRangeNumber;
+    outOfRangeNumber.setNum(number_HU_OutOfRange);
+    QString messagetext = "times was/were HU_Value out of Range";
+    outOfRangeNumber += messagetext;
+    //emit LOG(outOfRangeNumber);
+}
+
+void ImageLoader::updateXZView(){
+    //loading data from application data
+    const image3D tmp_imageData3D = m_pData->getImage3D();
+    //ui elements
+    QImage image(512,512, QImage::Format_RGB32);
+    int startSlider = ui->slider_xz_start->value();
+    int widthSlider = ui->slider_xz_width ->value();
+    int currentLayerSlider = ui->slider_xz_currentLayer->value();
+    int thresholdSlider = ui->slider_xz_threshold ->value();
+    // values for the algorithem
+    int imageDataPosition = 0;
+    int iGrauwert;
+    int hu_value;
+    int number_HU_OutOfRange = 0;
+    int number_windowing_OutOfRange = 0;
+    for(int y = 0 ; y < tmp_imageData3D.width; y++){
+        for(int x = 0 ; x < tmp_imageData3D.slices ; x++){
+             imageDataPosition = currentLayerSlider * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*x ;
+             hu_value = tmp_imageData3D.pImage[imageDataPosition];
+             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
+             if(windowingError == -1){
+                 number_HU_OutOfRange++;
+             }
+             if(windowingError == -2){
+                 number_windowing_OutOfRange++;
+             }
+             if(hu_value <= thresholdSlider){
+                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
+             }else{
+                 image.setPixel(y, x, qRgb(255,0,0));
+             }
+        }
+    }
+    ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
+
+    QString outOfRangeNumber;
+    outOfRangeNumber.setNum(number_HU_OutOfRange);
+    QString messagetext = "times was/were HU_Value out of Range";
+    outOfRangeNumber += messagetext;
+    //emit LOG(outOfRangeNumber);
+
+}
+//updateView(int width, int height, int startValue, int windowWidth, image3D tmp_im3D, QImage image);
 
 void ImageLoader::update3DView()
 {
@@ -69,30 +166,52 @@ void ImageLoader::update3DView()
         }
     }
 
-    qDebug( "C Style Debug Message" );
+    //qDebug( "C Style Debug Message" );
     ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 }
 
-void ImageLoader::updatedWindowingStart(int value)
+void ImageLoader::updatedXYWindowingStart(int value)
 {
     ui ->label_xy_start->setText("Start:" + QString::number(value));
-    update3DView();
+    updateAllViews();
 }
-void ImageLoader::updatedWindowingWidth(int value)
+void ImageLoader::updatedXYWindowingWidth(int value)
 {
     ui ->label_xy_width->setText("Width:" + QString::number(value));
-    update3DView();
+    updateAllViews();
 }
-void ImageLoader::updatedCurrentLayer(int value)
+void ImageLoader::updatedXYCurrentLayer(int value)
 {
     ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
-    update3DView();
+    updateAllViews();
 }
-void ImageLoader::updatedWindowingThreshold(int value)
+void ImageLoader::updatedXYWindowingThreshold(int value)
 {
     ui ->label_xy_threshold->setText("Threshold:" + QString::number(value));
-    update3DView();
+    updateAllViews();
 }
+//update xz slider values
+void ImageLoader::updatedXZWindowingStart(int value)
+{
+    ui ->label_xz_start->setText("Start:" + QString::number(value));
+    updateAllViews();
+}
+void ImageLoader::updatedXZWindowingWidth(int value)
+{
+    ui ->label_xz_width->setText("Width:" + QString::number(value));
+    updateAllViews();
+}
+void ImageLoader::updatedXZCurrentLayer(int value)
+{
+    ui ->label_xz_currentLayer->setText("Layer" + QString::number(value));
+    updateAllViews();
+}
+void ImageLoader::updatedXZWindowingThreshold(int value)
+{
+    ui ->label_xz_threshold->setText("Threshold:" + QString::number(value));
+    updateAllViews();
+}
+
 
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
