@@ -12,10 +12,11 @@ Eigen 3.3.7
 
 ### Documentation
 
-Location of Location of [Lastenheft](Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md):
+* Location of [Lastenheft](Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md):
+Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md
 
-Location of [Pflichenheft](Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md):
-
+* Location of [Pflichenheft](Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md):
+Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md
 ### Project structure
 
 app/Applicationdata will save the image data
