@@ -36,10 +36,10 @@ private:
     int updatedWidth;
     int currentLayer;
     int updatedThreshold;
-    Eigen::Vector3d localPoint_XY_1;
-    Eigen::Vector3d localPoint_XY_2;
-    int currentPoint;
-
+    Eigen::Vector3d localPoint_1;
+    Eigen::Vector3d localPoint_2;
+    int currentPointXY;
+    int currentPointXZ;
 
 
 private slots:
@@ -50,6 +50,7 @@ private slots:
     void updateAllViews();
     void updateXYView();
     void updateXZView();
+    QString updatePointlabel(int x, int y, int z);
 
 
 
@@ -58,7 +59,9 @@ private slots:
     void mousePressEvent(QMouseEvent *event);
     void updatedPoint1Z(int value);
     void updatedPoint2Z(int value);
-    void drawLine();
+    void drawLineXY(QImage &image);
+    void drawLineXZ(QImage &image);
+    void drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth);
 
     // show values of xy sliders
     void updatedXYWindowingStart(int value);

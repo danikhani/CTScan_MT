@@ -22,15 +22,14 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_xz_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingWidth(int)));
     connect(ui->slider_xz_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedXZCurrentLayer(int)));
     connect(ui->slider_xz_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
-    currentPoint = 2;
-
+    currentPointXY = 0;
+    currentPointXZ = 0;
 }
 
 ImageLoader::~ImageLoader()
 {
     delete ui;
 }
-
 
 void ImageLoader::setData(ApplicationData *pData){
    this->m_pData = pData;
@@ -60,7 +59,7 @@ void ImageLoader::updateXYView(){
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
     //ui elements
-    QImage image(512,512, QImage::Format_RGB32);
+    QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
     int startSlider = ui->slider_xy_start->value();
     int widthSlider = ui->slider_xy_width ->value();
     int currentLayerSlider = ui->slider_xy_currentLayer->value();
@@ -72,7 +71,7 @@ void ImageLoader::updateXYView(){
     int number_HU_OutOfRange = 0;
     int number_windowing_OutOfRange = 0;
     for(int y = 0 ; y < tmp_imageData3D.width; y++){
-        for(int x = 0 ; x < tmp_imageData3D.height ; x++){
+        for(int x = 0 ; x < tmp_imageData3D.height; x++){
              imageDataPosition = x * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*currentLayerSlider ;
              hu_value = tmp_imageData3D.pImage[imageDataPosition];
              int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
@@ -90,7 +89,13 @@ void ImageLoader::updateXYView(){
              }
         }
     }
-    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
+
+    //draw the line
+    if(!localPoint_1.isZero() && !localPoint_2.isZero()){
+        drawLineXY(image);
+    }
+     ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
+
 
     QString outOfRangeNumber;
     outOfRangeNumber.setNum(number_HU_OutOfRange);
@@ -103,7 +108,7 @@ void ImageLoader::updateXZView(){
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
     //ui elements
-    QImage image(512,512, QImage::Format_RGB32);
+    QImage image(tmp_imageData3D.width,tmp_imageData3D.slices, QImage::Format_RGB32);
     int startSlider = ui->slider_xz_start->value();
     int widthSlider = ui->slider_xz_width ->value();
     int currentLayerSlider = ui->slider_xz_currentLayer->value();
@@ -132,6 +137,16 @@ void ImageLoader::updateXZView(){
                  image.setPixel(y, x, qRgb(255,0,0));
              }
         }
+    }
+
+    if(!localPoint_1.isZero()){
+        drawVerticalXZLine(image,localPoint_1, tmp_imageData3D.slices);
+    }
+    if(!localPoint_2.isZero()){
+        drawVerticalXZLine(image,localPoint_2, tmp_imageData3D.slices);
+    }
+    if(localPoint_1.z()!=0 && localPoint_2.z()!=0){
+        drawLineXZ(image);
     }
     ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
 
@@ -212,48 +227,99 @@ void ImageLoader::updatedXZWindowingThreshold(int value)
     updateAllViews();
 }
 
-
+QString ImageLoader::updatePointlabel(int x, int y, int z){
+    auto printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
+    return printable;
+};
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
+    const image3D tmp_imageData3D = m_pData->getImage3D();
     int x = event->x();
     int y = event->y();
     QPoint globalPos;
     globalPos = event->pos();
-    QPoint localPos;
-    localPos = ui->label_xy_image->mapFromParent(globalPos);
-    if (ui->label_xy_image->rect().contains(localPos)){
+    QPoint localPosXY;
+    QPoint localPosXZ;
+    localPosXY = ui->label_xy_image->mapFromParent(globalPos);
+    localPosXZ = ui->label_xz_image->mapFromParent(globalPos);
+    if (ui->label_xy_image->rect().contains(localPosXY)){
         // check for risks. for choosing a point
-        if(currentPoint ==2){
-            localPoint_XY_1.x() = localPos.x();
-            localPoint_XY_1.y() = localPos.y();
-            //localPoint1.z = ui->slider_point1_z->value();
-            currentPoint = 1;
-            drawLine();
+        if(currentPointXY == 0){
+            localPoint_1.x() = localPosXY.x();
+            localPoint_1.y() = localPosXY.y();
+            currentPointXY = 1;
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
         }
-        else if(currentPoint == 1){
-            localPoint_XY_2.x() = localPos.x();
-            localPoint_XY_2.y() = localPos.y();
-            //localPoint2.z = ui->slider_point2_z->value();;
-            currentPoint = 2;
-            drawLine();
+        else if(currentPointXY == 1){
+            localPoint_2.x() = localPosXY.x();
+            localPoint_2.y() = localPosXY.y();
+            currentPointXY = 2;
+            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            updateAllViews();
+        }
+        else if(currentPointXY == 2){
+            localPoint_1.x() = localPosXY.x();
+            localPoint_1.y() = localPosXY.y();
+            currentPointXY = 1;
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
+        }
+    }
+    if (ui->label_xz_image->rect().contains(localPosXZ)){
+        // check for risks. for choosing a point
+        if(currentPointXZ == 0){
+            localPoint_1.z() = localPosXZ.y();
+            currentPointXZ = 1;
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
+        }
+        else if(currentPointXZ == 1){
+            localPoint_2.z() = localPosXZ.y();
+            currentPointXZ = 2;
+            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            updateAllViews();
+        }
+        else if(currentPointXZ == 2){
+            localPoint_1.z() = localPosXZ.y();
+            currentPointXZ = 1;
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
         }
     }
 }
+void ImageLoader::drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth){
+    for (int z = 0; z < depth ; z++){
+        image.setPixel(point.x(),z, qRgb(255, 0, 0));
+     }
+}
 
-void ImageLoader::drawLine()
+void ImageLoader::drawLineXY(QImage &image)
 {
-
-    /**
-    float tanLine = (firstPointXY.y - secPointXY.y)/(firstPointXY.x - secPointXY.x);
-    for (float i = 0; i < 1000; i++) {
-        float dx = firstPointXY.x + (secPointXY.x - firstPointXY.x)/1000.0*i; // interpolate betwenn the two points
-        float dy = (dx-firstPointXY.x)* tanLine + firstPointXY.y;
-        int x = (int)dx;
-        int y = (int)dy;
-        imageXY.setPixel(x,y,qRgb(255, 255, 0));
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (float i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
     }
-    **/
+}
+void ImageLoader::drawLineXZ(QImage &image)
+{
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (float i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
+    }
+}
 
+/**
     //read from the array and make the picture
     const image3D tmp_imageData3D = m_pData->getImage3D();
     QImage image(512,512, QImage::Format_RGB32);
@@ -276,6 +342,7 @@ void ImageLoader::drawLine()
     }
     ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 }
+**/
 /**
 drawline function:
 get localPoint1.x
