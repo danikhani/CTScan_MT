@@ -11,6 +11,7 @@
 #include "applicationdata.h"
 #include "mylib.h"
 #include <QMouseEvent>
+#include <QDebug>
 
 struct Point
 {

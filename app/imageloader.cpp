@@ -57,9 +57,12 @@ void ImageLoader::update3DView()
     QImage image(512,512, QImage::Format_RGB32);
     int imageDataPosition = 0;
     int iGrauwert;
+    //short tryvoxel[511][511][129];
     for(int y = 0 ; y < 512; y++){
         for(int x = 0 ; x < 512 ; x++){
             imageDataPosition = ui->slider_current_layer->value()*512*512 + x + 512*y;
+            //tryvoxel[x][y][ui->slider_current_layer->value()] = tmp_imageData3D.pImage[imageDataPosition];
+
             int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_start->value(),ui->slider_width ->value(),iGrauwert);
             if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_threshold ->value()){
                 image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
@@ -69,6 +72,19 @@ void ImageLoader::update3DView()
             }
         }
     }
+
+    for (int z = 0; z < 129; z++)
+    {
+       for (int y = 0; y < 511; y++) {
+
+           for (int x = 0; x < 511; x++)
+           {
+              //qDebug( tryvoxel[x][y][z] + " " );
+           }
+       }
+    }
+
+    qDebug( "C Style Debug Message" );
     ui->label_image_2->setPixmap(QPixmap::fromImage(image));
 }
 

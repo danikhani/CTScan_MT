@@ -6,6 +6,7 @@ ApplicationData::ApplicationData()
     m_pTiefenkarte = new short[512*512];
     //image3D imageData3D = new image3D();
     imageData3D.pImage = new short[130*512*512];
+    //imageData3D.pImage = new short[130][512][512];
 }
 
 ApplicationData::~ApplicationData()
