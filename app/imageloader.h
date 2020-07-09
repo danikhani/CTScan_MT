@@ -38,27 +38,29 @@ private:
     int updatedThreshold;
     Eigen::Vector3d localPoint_1;
     Eigen::Vector3d localPoint_2;
-    int currentPointXY;
-    int currentPointXZ;
+    Reconstruction reco;
+    image2D *reco_im2D;
+
 
 
 private slots:
     void ReadFile();
-    void update3DView();
     //static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
     //void updateView(int depth, int startValue, int windowWidth, int threshold, image3D tmp_imageData3D, QImage& image);
     void updateAllViews();
     void updateXYView();
     void updateXZView();
+    void updateSliceView();
     QString updatePointlabel(int x, int y, int z);
+    void reconstructSlice();
+    void visulizeSliceXY(QImage &image);
+    void visulizeSliceXZ(QImage &image);
 
 
 
     //void updatedTiefenKarte();
     //void update3DReflection();
     void mousePressEvent(QMouseEvent *event);
-    void updatedPoint1Z(int value);
-    void updatedPoint2Z(int value);
     void drawLineXY(QImage &image);
     void drawLineXZ(QImage &image);
     void drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth);
@@ -74,6 +76,13 @@ private slots:
     void updatedXZWindowingWidth(int value);
     void updatedXZCurrentLayer(int value);
     void updatedXZWindowingThreshold(int value);
+
+    //show values of slice slider
+    void updatedSliceWindowingStart(int value);
+    void updatedSliceWindowingWidth(int value);
+    void updatedSliceCurrentLayer(int value);
+    void updatedSliceWindowingThreshold(int value);
+
 
 
 

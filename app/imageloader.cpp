@@ -17,13 +17,25 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_xy_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingWidth(int)));
     connect(ui->slider_xy_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedXYCurrentLayer(int)));
     connect(ui->slider_xy_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingThreshold(int)));
-    //slider for the point z value
+    //slider for xy
     connect(ui->slider_xz_start, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingStart(int)));
     connect(ui->slider_xz_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingWidth(int)));
     connect(ui->slider_xz_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedXZCurrentLayer(int)));
     connect(ui->slider_xz_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
-    currentPointXY = 0;
-    currentPointXZ = 0;
+    //slider for slicer
+    connect(ui->slider_slice_start, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingStart(int)));
+    connect(ui->slider_slice_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingWidth(int)));
+    connect(ui->slider_slice_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceCurrentLayer(int)));
+    connect(ui->slider_slice_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
+
+    localPoint_1.x() = 0;
+    localPoint_1.y() = 0;
+    localPoint_1.z() = 0;
+    localPoint_2.x() = 0;
+    localPoint_2.y() = 0;
+    localPoint_2.z() = 0;
+
+    reco_im2D =  new image2D(512,512);
 }
 
 ImageLoader::~ImageLoader()
@@ -91,8 +103,11 @@ void ImageLoader::updateXYView(){
     }
 
     //draw the line
-    if(!localPoint_1.isZero() && !localPoint_2.isZero()){
+    if(localPoint_1.x() != 0 && localPoint_1.y() != 0 && localPoint_2.x() != 0 && localPoint_2.y() != 0 ){
         drawLineXY(image);
+    }
+    if(reco.pos.x()!=0){
+        visulizeSliceXY(image);
     }
      ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 
@@ -103,7 +118,6 @@ void ImageLoader::updateXYView(){
     outOfRangeNumber += messagetext;
     //emit LOG(outOfRangeNumber);
 }
-
 void ImageLoader::updateXZView(){
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
@@ -139,15 +153,16 @@ void ImageLoader::updateXZView(){
         }
     }
 
-    if(!localPoint_1.isZero()){
+    if(localPoint_1.x() != 0){
         drawVerticalXZLine(image,localPoint_1, tmp_imageData3D.slices);
     }
-    if(!localPoint_2.isZero()){
+    if(localPoint_2.x() != 0){
         drawVerticalXZLine(image,localPoint_2, tmp_imageData3D.slices);
     }
     if(localPoint_1.z()!=0 && localPoint_2.z()!=0){
         drawLineXZ(image);
     }
+    visulizeSliceXZ(image);
     ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
 
     QString outOfRangeNumber;
@@ -157,34 +172,171 @@ void ImageLoader::updateXZView(){
     //emit LOG(outOfRangeNumber);
 
 }
-//updateView(int width, int height, int startValue, int windowWidth, image3D tmp_im3D, QImage image);
-
-void ImageLoader::update3DView()
-{
-    //read from the array and make the picture
+void ImageLoader::updateSliceView(){
     const image3D tmp_imageData3D = m_pData->getImage3D();
-    QImage image(512,512, QImage::Format_RGB32);
-    int imageDataPosition = 0;
-    int iGrauwert;
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            imageDataPosition = ui->slider_xy_currentLayer->value()*512*512 + x + 512*y;
-            //tryvoxel[x][y][ui->slider_current_layer->value()] = tmp_imageData3D.pImage[imageDataPosition];
+    QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
 
-            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_xy_start->value(),ui->slider_xy_width ->value(),iGrauwert);
-            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_xy_threshold ->value()){
-                image.setPixel(x , y,qRgb(iGrauwert, iGrauwert, iGrauwert));
-            }
-            else{
-                image.setPixel(x , y, qRgb(255,0,0));
-            }
+    int startSlider = ui->slider_slice_start->value();
+    int widthSlider = ui->slider_slice_width ->value();
+    int thresholdSlider = ui->slider_slice_threshold ->value();
+    int iGrauwert;
+    int hu_value;
+    for (int i = 0; i < tmp_imageData3D.width; i++){
+        for (int j = 0; j < tmp_imageData3D.height; j++){
+            hu_value = reco_im2D->pImage[i + 512*j];
+            int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+            image.setPixel(i,j, qRgb(iGrauwert, iGrauwert, iGrauwert));
+        }
+    }
+    ui->label_slice_image->setPixmap(QPixmap::fromImage(image));
+}
+
+
+
+QString ImageLoader::updatePointlabel(int x, int y, int z){
+    auto printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
+    return printable;
+};
+void ImageLoader::mousePressEvent(QMouseEvent *event)
+{
+    const image3D tmp_imageData3D = m_pData->getImage3D();
+    int x = event->x();
+    int y = event->y();
+    QPoint globalPos;
+    globalPos = event->pos();
+    QPoint localPosXY;
+    QPoint localPosXZ;
+    localPosXY = ui->label_xy_image->mapFromParent(globalPos);
+    localPosXZ = ui->label_xz_image->mapFromParent(globalPos);
+    if (ui->label_xy_image->rect().contains(localPosXY)){
+        // check for risks. for choosing a point
+        if(event->button() == Qt::LeftButton){
+            localPoint_1.x() = localPosXY.x();
+            localPoint_1.y() = localPosXY.y();
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
+        }
+        else if(event->button() == Qt::RightButton){
+            localPoint_2.x() = localPosXY.x();
+            localPoint_2.y() = localPosXY.y();
+            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            updateAllViews();
+        }
+    }
+    if (ui->label_xz_image->rect().contains(localPosXZ)){
+        // check for risks. for choosing a point
+        if(event->button() == Qt::LeftButton){
+            localPoint_1.z() = localPosXZ.y();
+            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            updateAllViews();
+        }
+        else if(event->button() == Qt::RightButton){
+            localPoint_2.z() = localPosXZ.y();
+            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            updateAllViews();
+        }
+     }
+}
+void ImageLoader::drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth){
+    for (int z = 0; z < depth ; z++){
+        image.setPixel(point.x(),z, qRgb(255, 0, 0));
+     }
+}
+
+void ImageLoader::drawLineXY(QImage &image)
+{
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (double i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
+    }
+}
+void ImageLoader::drawLineXZ(QImage &image)
+{
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (double i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
+    }
+}
+void ImageLoader::reconstructSlice(){
+    double percentage = ui->slider_slice_currentLayer->value();
+    Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
+    Eigen::Vector3d notRounded = (percentage/100.0)*normalVector + localPoint_1;
+
+    reco.pos.x() = (int)round(notRounded.x());
+    reco.pos.y() = (int)round(notRounded.y());
+    reco.pos.z() = (int)round(notRounded.z());
+
+    ui ->label_slicerCoordinate->setText(updatePointlabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
+
+    double d = normalVector.x()*reco.pos.x() + normalVector.y()*reco.pos.y() + normalVector.z()*reco.pos.z();
+
+    // equation on plane: ax + by + cz = d
+    // also we know that the point reco.pos is place on the plan
+    //double d = a*reco.pos.x + b*reco.pos.y + c*reco.pos.z;
+    // consider xdir=(1, y1, 0) ; ydir=(1, y2, z2)
+    // xdir and ydir are orthogonal, e.a (xdir.ydir = 0)
+    // and both xdir and ydir are placed on the plan and should satisfy the plane equation
+    // so the result is the following:
+    reco.xdir.x() = 1;
+    reco.xdir.y() = (-normalVector.x())/normalVector.y();
+    reco.xdir.z() = 0;
+
+    reco.ydir.x() = 1;
+    reco.ydir.y() = normalVector.y()/normalVector.x();
+    reco.ydir.z() = (d-normalVector.x() + pow(normalVector.y(),2)/(d-normalVector.x()))/normalVector.z();
+
+    const image3D tmp_imageData3D = m_pData->getImage3D();
+
+    //image2D reco_im2D =  image2D(512,512);
+    int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
+    //drawDrillTrajectory = true;
+    //updateView();
+}
+void ImageLoader::visulizeSliceXZ(QImage &image){
+    Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
+    double tanLine = -normalVector.x()/normalVector.z();
+
+    // draw a circle around the pos point in both views
+    for (int l=-100; l<=100; l++){
+        double dx = reco.pos.x() + (-normalVector.z())*l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
+        double dz = reco.pos.z() + (normalVector.x()) *l/(pow(pow(normalVector.x(),2)+pow(normalVector.z(),2),.5));
+        int x = (int)round(dx);
+        int z = (int)round(dz);
+        if (x>=0 && x<512 && z>=0 && z<256){
+            image.setPixel(x,z, qRgb(255, 255, 0));
+        }
+    }
+}
+void ImageLoader::visulizeSliceXY(QImage &image){
+    Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
+    double tanLine = -normalVector.x()/normalVector.y();
+
+
+    for (int l=-100; l<=100; l++){
+        double dx = reco.pos.x() + (-normalVector.y())*l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
+        double dy = reco.pos.y() + (normalVector.x()) *l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
+        int x = (int)round(dx);
+        int y = (int)round(dy);
+        if (x>=0 && x<512 && y>=0 && y<512){
+            image.setPixel(x,y, qRgb(255, 255, 0));
         }
     }
 
-    //qDebug( "C Style Debug Message" );
-    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 }
 
+
+//---------------------------------Slidersupdate------------------------
+//XY window
 void ImageLoader::updatedXYWindowingStart(int value)
 {
     ui ->label_xy_start->setText("Start:" + QString::number(value));
@@ -227,270 +379,26 @@ void ImageLoader::updatedXZWindowingThreshold(int value)
     updateAllViews();
 }
 
-QString ImageLoader::updatePointlabel(int x, int y, int z){
-    auto printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
-    return printable;
-};
-void ImageLoader::mousePressEvent(QMouseEvent *event)
+//Slice
+void ImageLoader::updatedSliceWindowingStart(int value)
 {
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    int x = event->x();
-    int y = event->y();
-    QPoint globalPos;
-    globalPos = event->pos();
-    QPoint localPosXY;
-    QPoint localPosXZ;
-    localPosXY = ui->label_xy_image->mapFromParent(globalPos);
-    localPosXZ = ui->label_xz_image->mapFromParent(globalPos);
-    if (ui->label_xy_image->rect().contains(localPosXY)){
-        // check for risks. for choosing a point
-        if(currentPointXY == 0){
-            localPoint_1.x() = localPosXY.x();
-            localPoint_1.y() = localPosXY.y();
-            currentPointXY = 1;
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
-            updateAllViews();
-        }
-        else if(currentPointXY == 1){
-            localPoint_2.x() = localPosXY.x();
-            localPoint_2.y() = localPosXY.y();
-            currentPointXY = 2;
-            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
-            updateAllViews();
-        }
-        else if(currentPointXY == 2){
-            localPoint_1.x() = localPosXY.x();
-            localPoint_1.y() = localPosXY.y();
-            currentPointXY = 1;
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
-            updateAllViews();
-        }
-    }
-    if (ui->label_xz_image->rect().contains(localPosXZ)){
-        // check for risks. for choosing a point
-        if(currentPointXZ == 0){
-            localPoint_1.z() = localPosXZ.y();
-            currentPointXZ = 1;
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
-            updateAllViews();
-        }
-        else if(currentPointXZ == 1){
-            localPoint_2.z() = localPosXZ.y();
-            currentPointXZ = 2;
-            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
-            updateAllViews();
-        }
-        else if(currentPointXZ == 2){
-            localPoint_1.z() = localPosXZ.y();
-            currentPointXZ = 1;
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
-            updateAllViews();
-        }
-    }
+    ui ->label_slice_start->setText("Start:" + QString::number(value));
+    updateSliceView();
 }
-void ImageLoader::drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth){
-    for (int z = 0; z < depth ; z++){
-        image.setPixel(point.x(),z, qRgb(255, 0, 0));
-     }
-}
-
-void ImageLoader::drawLineXY(QImage &image)
+void ImageLoader::updatedSliceWindowingWidth(int value)
 {
-    Eigen::Vector3d tanLine;
-    Eigen::Vector3d line;
-    tanLine = localPoint_2 - localPoint_1;
-    double norm = tanLine.norm();
-    tanLine.normalize();
-    for (float i = 0; i < norm; i++) {
-        line = tanLine*i + localPoint_1;
-        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
-    }
+    ui ->label_slice_width->setText("Width:" + QString::number(value));
+    updateSliceView();
 }
-void ImageLoader::drawLineXZ(QImage &image)
+void ImageLoader::updatedSliceCurrentLayer(int value)
 {
-    Eigen::Vector3d tanLine;
-    Eigen::Vector3d line;
-    tanLine = localPoint_2 - localPoint_1;
-    double norm = tanLine.norm();
-    tanLine.normalize();
-    for (float i = 0; i < norm; i++) {
-        line = tanLine*i + localPoint_1;
-        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
-    }
+    ui ->label_slice_currentLayer->setText("% " + QString::number(value));
+    reconstructSlice();
+    updateAllViews();
 }
-
-/**
-    //read from the array and make the picture
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    QImage image(512,512, QImage::Format_RGB32);
-    int imageDataPosition = 0;
-    int iGrauwert;
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            imageDataPosition = ui->slider_xy_currentLayer->value()*512*512 + x + 512*y;
-            int windowingError = MyLib::windowing(tmp_imageData3D.pImage[imageDataPosition],ui->slider_xy_start->value(),ui->slider_xy_width ->value(),iGrauwert);
-            if(tmp_imageData3D.pImage[imageDataPosition] <= ui->slider_xy_threshold ->value()){
-                image.setPixel(x , y, qRgb(iGrauwert,iGrauwert,iGrauwert));
-            }
-            else{
-                image.setPixel(x , y, qRgb(255,0,0));
-            }
-            if(y == ((localPoint_XY_2.y() - localPoint_XY_1.y())/(localPoint_XY_2.x() - localPoint_XY_1.x())*(x-localPoint_XY_1.x())+localPoint_XY_1.y())){
-                image.setPixel(x , y, qRgb(255,0,0));
-            }
-        }
-    }
-    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
-}
-**/
-/**
-drawline function:
-get localPoint1.x
-**/
-void ImageLoader::updatedPoint1Z(int value)
+void ImageLoader::updatedSliceWindowingThreshold(int value)
 {
-    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
-    update3DView();
+    ui ->label_slice_threshold->setText("Threshold:" + QString::number(value));
+    updateSliceView();
 }
-void ImageLoader::updatedPoint2Z(int value)
-{
-    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
-    update3DView();
-}
-
-
-/**
-//for updating the tiefenkarte.
-void ImageLoader::updatedTiefenKarte(){
-    //load data to threshhold
-    bool status = m_pData->calculateDepthMap(ui->slider_threshold ->value());
-    // check if there is a problem.
-    const short* pTiefenkarte = m_pData->getDepthMap();
-    if(!status){
-        QMessageBox::critical(this, "Cant Load","Try again please");
-    }
-
-    QImage image(512,512, QImage::Format_RGB32);
-    int currenttiefe = 0;
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            currenttiefe = pTiefenkarte[x+ 512*y];
-            image.setPixel(x , y, qRgb(currenttiefe,currenttiefe,currenttiefe));
-
-        }
-    }
-
-    //to set the current layer number string
-    int currentlayer = 0;
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    for(int y = 0 ; y < 512; y++){
-        for(int x = 0 ; x < 512 ; x++){
-            for(int layer = 129; layer >= 0; layer--){
-                int imageDataPosition =layer*512*512 + x + 512*y;;
-                if(tmp_imageData3D.pImage[imageDataPosition] > ui->slider_threshold ->value()){
-                    currentlayer = 129-layer;
-            }
-            }
-        }
-    }
-    ui ->label_tiefenKarte->setText("Tiefe:" + QString::number(currentlayer));
-
-    // show the picture
-    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
-
-}
-
-//void ImageLoader::update3DReflection(){}
-//for showing the 3D-Picture
-
-void ImageLoader::update3DReflection(){
-    updatedTiefenKarte();
-    const short* pTiefenkarte = m_pData->getDepthMap();
-    int sy = 2;
-    int sx = 2;
-    QImage image(512,512, QImage::Format_RGB32);
-
-    for(int y = 1 ; y < 511; y++){
-        for(int x = 1 ; x < 511 ; x++){
-            double tx =pTiefenkarte[x-1 + 512*y] - pTiefenkarte[x+1 + 512*y];
-            double ty =pTiefenkarte[x + 512*(y-1)] - pTiefenkarte[x + 512*(y+1)];
-            int iRefl = 255.0*(sx*sy)/std::pow(std::pow(sy*tx,2) + std::pow(sx*ty,2) + std::pow(sy*sx,2),0.5);
-            image.setPixel(x , y, qRgb(iRefl,iRefl,iRefl));
-        }
-    }
-    ui->label_image_2->setPixmap(QPixmap::fromImage(image));
-}
-**/
-
-
-/**
-
-void ImageLoader::on_Button_FindMarker_clicked()
-{
-    EIDM_CTScan scan;
-    scan.data = m_pImage;
-    scan.width = 512;
-    scan.height = 512;
-    scan.layers = 130;
-    scan.size = 512 * 512 * 130 * sizeof(short);
-    scan.vox_scale_xy = 0.1;
-    scan.vox_scale_z = 0.1;
-
-    uint8_t* check_arr;
-    check_arr = new uint8_t[512 * 512 * 130];
-    EIDM_ProgStatus prog;
-
-    EIDM_ProgCallback Callback;
-
-    EIDM_UserData UserData;
-
-    EIDM_RegionList list;
-
-    int z = EIDM_find_markers(&scan, nullptr, nullptr, nullptr, nullptr);
-}
-
-
-void ImageLoader::Region_Growing(Point localPoint){
-
-    EIDM_CTScan scan;
-    scan.data = m_pImage;
-    scan.width = 512;
-    scan.height = 512;
-    scan.layers = 130;
-    scan.size = 512 * 512 * 130 * sizeof(short);
-    scan.vox_scale_xy = 0.1;
-    scan.vox_scale_z = 0.1;
-
-    EIDM_Vox3 seed;
-    seed.x = localPoint.x;
-    seed.y = localPoint.y;
-    seed.z = localPoint.z;
-    uint8_t* check_arr;
-    check_arr = new uint8_t[512 * 512 * 130];
-    EIDM_ProgStatus prog;
-
-    EIDM_ProgCallback Callback;
-
-    EIDM_UserData UserData;
-
-    EIDM_RegionList list;
-
-    int t = EIDM_region_grow(&scan, &seed, Untere_Grenze, Obere_Grenze, check_arr, nullptr, nullptr);
-
-    //int r = EIDM_region_list_from_mat(&scan, check_arr, *list);
-
-    QImage im(512, 512, QImage::Format_RGB32);
-    int test = check_arr[200+200*512+512*512*60] ;
-    for (int i = 0; i < 512; i++)	{
-        for (int j = 0; j < 512; j = j + 1)		{
-                if (check_arr[j * 512 + i + 512 * 512 * layerNr] == 1){
-                    im.setPixel(i, j, qRgb(0, 255, 0));
-                }
-        }
-    }
-    ui->labelImage->setPixmap(QPixmap::fromImage(im));
-
-}
-
-**/
 

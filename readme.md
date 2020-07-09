@@ -1,4 +1,4 @@
-# SWEDIMT Term Project
+# SWEIDMT SS2020 Term Project
 
 A program to plan a surgeury from CT files.
 
