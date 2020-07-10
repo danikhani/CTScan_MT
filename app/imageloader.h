@@ -12,6 +12,7 @@
 #include "mylib.h"
 #include <QMouseEvent>
 #include <QDebug>
+#include <QInputDialog>
 
 namespace Ui {
 class ImageLoader;

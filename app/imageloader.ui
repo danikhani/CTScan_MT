@@ -38,8 +38,8 @@
   <widget class="QPushButton" name="pushButton_tiefenKarte">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>240</y>
+     <x>0</x>
+     <y>300</y>
      <width>90</width>
      <height>28</height>
     </rect>
@@ -95,17 +95,17 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_reflect">
+  <widget class="QPushButton" name="pushButton_boring_Diameter">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>290</y>
+     <x>0</x>
+     <y>510</y>
      <width>90</width>
      <height>28</height>
     </rect>
    </property>
    <property name="text">
-    <string>3D-Reflection</string>
+    <string>Give Diameter</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_xy_width">
@@ -137,14 +137,14 @@
   <widget class="QPushButton" name="pushButton_layered">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>190</y>
+     <x>0</x>
+     <y>10</y>
      <width>90</width>
      <height>28</height>
     </rect>
    </property>
    <property name="text">
-    <string>Load 3D</string>
+    <string>Load Image</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_xy_image">
@@ -164,7 +164,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>130</y>
+     <y>170</y>
      <width>111</width>
      <height>21</height>
     </rect>
@@ -177,7 +177,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>30</y>
+     <y>70</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -193,7 +193,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>80</y>
+     <y>120</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -557,7 +557,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
+     <y>50</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -573,7 +573,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>60</y>
+     <y>100</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -589,7 +589,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>110</y>
+     <y>150</y>
      <width>71</width>
      <height>21</height>
     </rect>
@@ -602,7 +602,7 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>50</y>
+     <y>90</y>
      <width>71</width>
      <height>16</height>
     </rect>
@@ -615,13 +615,94 @@
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>100</y>
+     <y>140</y>
      <width>71</width>
      <height>16</height>
     </rect>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_boringLength">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>410</y>
+     <width>111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Length = 0</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_Boring">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>370</y>
+     <width>71</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Boring</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line_3">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>390</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_boringDiameter">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>440</y>
+     <width>111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Diameter = 0</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>470</y>
+     <width>42</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit_points">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>200</y>
+     <width>91</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="html">
+    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Point1:&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(0,0,0)&lt;br /&gt;Point2:&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(0,0,0)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
  </widget>

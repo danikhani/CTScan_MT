@@ -38,9 +38,9 @@ int MyLib::getSlice(const image3D& image, const Reconstruction& param, image2D& 
             //normalize
             tempVector = param.pos + i*normXdir + j*normYdir;
             //TODO: scalierung muss berücksichtigig werden,
-            int x = round(tempVector.x());
-            int y = round(tempVector.y());
-            int z = round(tempVector.z());
+            int x = (int)round(tempVector.x());
+            int y = (int)round(tempVector.y());
+            int z = (int)round(tempVector.z());
 
             int iIndex = x+ y*image.height  + z*image.height*image.slices;
             if ((x>=0 && x<image.width) && (y>=0 && y<image.height) && (z>=0 && z<image.slices)){

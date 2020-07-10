@@ -10,7 +10,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     //give the button
     connect(ui->pushButton_layered, SIGNAL(clicked()), this, SLOT(ReadFile()));
     connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(updatedTiefenKarte()));
-    connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
+    //connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
 
     //xy picture sliders and labels
     connect(ui->slider_xy_start, SIGNAL(valueChanged(int)), this, SLOT(updatedXYWindowingStart(int)));
@@ -196,7 +196,8 @@ void ImageLoader::updateSliceView(){
 QString ImageLoader::updatePointlabel(int x, int y, int z){
     auto printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
     return printable;
-};
+}
+
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
     const image3D tmp_imageData3D = m_pData->getImage3D();
@@ -278,6 +279,20 @@ void ImageLoader::reconstructSlice(){
 
     ui ->label_slicerCoordinate->setText(updatePointlabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
 
+    Eigen::Vector3d normlizedTan = normalVector.normalized();
+    //reco.xdir = normalVector;
+
+    reco.xdir.x() = 0;
+    reco.xdir.y() = normalVector.z();
+    reco.xdir.z() = -normalVector.y();
+
+    reco.ydir.x() = normalVector.z();
+    reco.ydir.y() = 0;
+    reco.ydir.z() = -normalVector.x();
+
+
+    /**
+
     double d = normalVector.x()*reco.pos.x() + normalVector.y()*reco.pos.y() + normalVector.z()*reco.pos.z();
 
     // equation on plane: ax + by + cz = d
@@ -288,12 +303,18 @@ void ImageLoader::reconstructSlice(){
     // and both xdir and ydir are placed on the plan and should satisfy the plane equation
     // so the result is the following:
     reco.xdir.x() = 1;
-    reco.xdir.y() = (-normalVector.x())/normalVector.y();
+    reco.xdir.y() = -normalVector.x()/normalVector.y();
     reco.xdir.z() = 0;
 
     reco.ydir.x() = 1;
     reco.ydir.y() = normalVector.y()/normalVector.x();
-    reco.ydir.z() = (d-normalVector.x() + pow(normalVector.y(),2)/(d-normalVector.x()))/normalVector.z();
+    reco.ydir.z() = (-normalVector.x()-pow(normalVector.y(),2)/normalVector.x())/normalVector.z();
+
+    reco.posPara.x() = 0;
+    reco.posPara.y() = 0;
+    reco.posPara.z() = d/normalVector.z();
+
+    **/
 
     const image3D tmp_imageData3D = m_pData->getImage3D();
 
@@ -303,35 +324,30 @@ void ImageLoader::reconstructSlice(){
     //updateView();
 }
 void ImageLoader::visulizeSliceXZ(QImage &image){
-    Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
-    double tanLine = -normalVector.x()/normalVector.z();
+    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
+    Eigen::Vector3d line;
+    tanLine.normalize();
+    Eigen::Vector3d orthogonalVector(-tanLine.z(),0,tanLine.x());
 
-    // draw a circle around the pos point in both views
     for (int l=-100; l<=100; l++){
-        double dx = reco.pos.x() + (-normalVector.z())*l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
-        double dz = reco.pos.z() + (normalVector.x()) *l/(pow(pow(normalVector.x(),2)+pow(normalVector.z(),2),.5));
-        int x = (int)round(dx);
-        int z = (int)round(dz);
-        if (x>=0 && x<512 && z>=0 && z<256){
-            image.setPixel(x,z, qRgb(255, 255, 0));
+        line = reco.pos + orthogonalVector*l;
+        if (line.x()>=0 && line.x()<512 && line.z()>=0 && line.z()<256){
+            image.setPixel(line.x(),line.z(), qRgb(255, 255, 0));
         }
     }
 }
 void ImageLoader::visulizeSliceXY(QImage &image){
-    Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
-    double tanLine = -normalVector.x()/normalVector.y();
-
+    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
+    Eigen::Vector3d line;
+    tanLine.normalize();
+    Eigen::Vector3d orthogonalVector(-tanLine.y(),tanLine.x(),0);
 
     for (int l=-100; l<=100; l++){
-        double dx = reco.pos.x() + (-normalVector.y())*l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
-        double dy = reco.pos.y() + (normalVector.x()) *l/(pow(pow(normalVector.x(),2)+pow(normalVector.y(),2),.5));
-        int x = (int)round(dx);
-        int y = (int)round(dy);
-        if (x>=0 && x<512 && y>=0 && y<512){
-            image.setPixel(x,y, qRgb(255, 255, 0));
+        line = reco.pos + orthogonalVector*l;
+        if (line.x()>=0 && line.x()<512 && line.y()>=0 && line.y()<512){
+            image.setPixel(line.x(),line.y(), qRgb(255, 255, 0));
         }
     }
-
 }
 
 
@@ -395,6 +411,7 @@ void ImageLoader::updatedSliceCurrentLayer(int value)
     ui ->label_slice_currentLayer->setText("% " + QString::number(value));
     reconstructSlice();
     updateAllViews();
+    updateSliceView();
 }
 void ImageLoader::updatedSliceWindowingThreshold(int value)
 {

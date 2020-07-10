@@ -28,6 +28,7 @@ public:
 struct Reconstruction // Parameters for Slice reconstruction
 {
     Eigen::Vector3d pos; // position of the center of the slice within the voxel dataset in voxel unit
+    Eigen::Vector3d posPara;
     Eigen::Vector3d xdir; // direction of the x-axis of the reconstructed slice within the voxel dataset
     Eigen::Vector3d ydir; // direction of the y-axis of the reconstructed slice within the voxel dataset
     double scale; // Scaling, such as 1.0 reconstructs an image where 1 pixel corresponds to 1mm
