@@ -28,7 +28,8 @@ public:
     ~ImageLoader();
     void setData(ApplicationData *pData);
 signals:
-    void LOG(QString str);
+    void LOG_State(QString str);
+    void LOG_Instructions(QString str);
 
 private:
     Ui::ImageLoader *ui;
@@ -40,8 +41,9 @@ private:
     int updatedThreshold;
     Eigen::Vector3d localPoint_1;
     Eigen::Vector3d localPoint_2;
-    Reconstruction reco;
+    Reconstruction param;
     image2D *reco_im2D;
+    double scale;
 
 
 
@@ -65,6 +67,7 @@ private slots:
     void drawLineXY(QImage &image);
     void drawLineXZ(QImage &image);
     void drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth);
+    void drawBoringCircle(QImage &image);
 
     // show values of xy sliders
     void updatedXYWindowingStart(int value);
@@ -84,6 +87,9 @@ private slots:
     void updatedSliceCurrentLayer(int value);
     void updatedSliceWindowingThreshold(int value);
     void updatedSliceRotGrade(int value);
+    void updatedSliceScale(int value);
+
+    void drawSlice();
 
 
 

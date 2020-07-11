@@ -26,7 +26,8 @@ private:
     //image3D imageData3D;
 
 private slots:
-    void LOG(QString str);
+    void LOG_State(QString str);
+    void LOG_Instructions(QString str);
 
 };
 #endif // SWEIDMT_H

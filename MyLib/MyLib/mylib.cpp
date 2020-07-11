@@ -28,6 +28,9 @@ int MyLib::windowing(int HU_value, int startValue, int windowWidth, int& iGrauwe
 
  //TODO: scalierung muss berücksichtigig werden,
 int MyLib::getSlice(const image3D& image, const Reconstruction& param, image2D& im2D){
+     Eigen::Vector3d directionsVector;
+     Eigen::Vector3d xdirNormed =param.xdir.normalized() ;
+     Eigen::Vector3d ydirNormed =param.ydir.normalized() ;
 
     int error_stat = 0; // returns 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
     if (false){ // if input image is incorrect
@@ -37,18 +40,10 @@ int MyLib::getSlice(const image3D& image, const Reconstruction& param, image2D& 
     try {
         for (float i = 0.0; i < im2D.width; i++) {
             for (float j = 0.0; j < im2D.height; j++){
-                // normalize the param.xdir and param.ydir vectors
-                double xdirVecLength = param.xdir.norm();
-                double ydirVecLength = param.ydir.norm();
-                // calculate the coordinates x,y,z of pixel(i,j) of the slice in global coordinates system
-                // the slice is described by two orthogonal vectors xdir & ydir
-                double dx = param.pos.x() + (i - im2D.width/2)*param.xdir.x()/xdirVecLength + (j - im2D.height/2)*param.ydir.x()/ydirVecLength;
-                double dy = param.pos.y() + (i - im2D.width/2)*param.xdir.y()/xdirVecLength + (j - im2D.height/2)*param.ydir.y()/ydirVecLength;
-                double dz = param.pos.z() + (i - im2D.width/2)*param.xdir.z()/xdirVecLength + (j - im2D.height/2)*param.ydir.z()/ydirVecLength;
-                // round the x,y,z coordinates TODO: CONSIDER SCALE!!
-                int x = (int) (dx + .5);
-                int y = (int) (dy + .5);
-                int z = (int) ((dz/image.pixelSpacingZ*image.pixelSpacingXY )+.5);
+                directionsVector = param.pos + (i - im2D.width/2)*xdirNormed/param.scale + (j-im2D.height/2)*ydirNormed/param.scale;
+                int x = (int) round(directionsVector.x());
+                int y = (int) round(directionsVector.y());
+                int z = (int) round(directionsVector.z()/image.pixelSpacingZ*image.pixelSpacingXY );
                 // find the corresponding voxel index
                 int iIndex3DImgae = x+ y*image.width  + z*image.width*image.height;
                 // check if the voxel exists / the voxel index is inside the image boundaries
@@ -71,7 +66,7 @@ QString MyLib::updatePointslabel(int x, int y, int z){
     QString printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
     return printable;
 }
-int MyLib::rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen::Vector3d& rotatedVector){
+int MyLib::rotateSlice(Eigen::Vector3d normalVector, double rotationGrade, Eigen::Vector3d& rotatedVector){
     double alpha = 2*M_PI /360 * rotationGrade ;
 
     Eigen::Vector3d normedNormalVector = normalVector.normalized();
@@ -101,6 +96,15 @@ int MyLib::rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen:
 
     rotatedVector = rotationMatrix * rotatedVector;
 
+
+    return 1;
+}
+int MyLib::calculateBoringLength(Eigen::Vector3d startPoint,Eigen::Vector3d endPoint, double pixelSpacingXY, double pixelSpacingZ, double& boringLength){
+    Eigen::Vector3d boringVector = startPoint - endPoint;
+    Eigen::Vector3d scaleVector(pixelSpacingXY,pixelSpacingXY,pixelSpacingZ);
+
+    boringVector = boringVector.cwiseProduct(scaleVector);
+    boringLength = boringVector.norm();
 
     return 1;
 }

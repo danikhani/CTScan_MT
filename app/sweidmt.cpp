@@ -24,7 +24,9 @@ sweidmt::~sweidmt()
     delete m_pImageLoader;
 }
 
-void sweidmt::LOG(QString str) {
-    ui->textEdit->append(str);
+void sweidmt::LOG_State(QString str) {
+    ui->textEdit_Error->append(str);
 }
-
+void sweidmt::LOG_Instructions(QString str) {
+    ui->textEdit_Steps->append(str);
+}

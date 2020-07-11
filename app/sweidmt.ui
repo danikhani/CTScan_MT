@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1927</width>
-    <height>932</height>
+    <height>999</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,28 +19,73 @@
      <x>10</x>
      <y>16</y>
      <width>1901</width>
-     <height>681</height>
+     <height>811</height>
     </rect>
    </property>
   </widget>
-  <widget class="QTextEdit" name="textEdit">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
+  <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>700</y>
-     <width>1961</width>
-     <height>200</height>
+     <y>830</y>
+     <width>931</width>
+     <height>161</height>
     </rect>
    </property>
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>200</height>
-    </size>
+   <property name="title">
+    <string>Program State</string>
    </property>
+   <widget class="QTextEdit" name="textEdit_Error">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>931</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>200</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>980</x>
+     <y>830</y>
+     <width>931</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Instructions</string>
+   </property>
+   <widget class="QTextEdit" name="textEdit_Steps">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>911</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>200</height>
+     </size>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

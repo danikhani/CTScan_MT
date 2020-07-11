@@ -66,6 +66,7 @@ public:
     static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
     static QString updatePointslabel(int x, int y, int z);
     static int rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen::Vector3d& rotatedVector);
+    static int calculateBoringLength(Eigen::Vector3d startPoint,Eigen::Vector3d endPoint, double pixelSpacingXY, double pixelSpacingZ, double& boringLength);
 };
 
 #endif // MYLIB_H

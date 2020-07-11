@@ -9,7 +9,8 @@ ImageLoader::ImageLoader(QWidget *parent) :
     ui->setupUi(this);
     //give the button
     connect(ui->pushButton_layered, SIGNAL(clicked()), this, SLOT(ReadFile()));
-    connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(updatedTiefenKarte()));
+
+    //connect(ui->pushButton_tiefenKarte, SIGNAL(clicked()), this, SLOT(updatedTiefenKarte()));
     //connect(ui->pushButton_reflect, SIGNAL(clicked()), this, SLOT(update3DReflection()));
 
     //xy picture sliders and labels
@@ -28,6 +29,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_slice_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceCurrentLayer(int)));
     connect(ui->slider_slice_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
     connect(ui->slider_slice_rotGrade, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceRotGrade(int)));
+    connect(ui->slider_slice_scale, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceScale(int)));
 
     localPoint_1.x() = 0;
     localPoint_1.y() = 0;
@@ -38,6 +40,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
 
     reco_im2D =  new image2D(512,512);
     //image3D tmp_imageData3D = m_pData->getImage3D();
+    scale = 1;
 }
 
 ImageLoader::~ImageLoader()
@@ -58,7 +61,7 @@ void ImageLoader::ReadFile(){
 
     if(status == 1){
         updateAllViews();
-        emit LOG("Image Loaded");
+        emit LOG_State("Image Loaded");
     }
     else{
         QMessageBox::critical(this, "Cant Load","Try again please");
@@ -108,7 +111,7 @@ void ImageLoader::updateXYView(){
     if(localPoint_1.x() != 0 && localPoint_1.y() != 0 && localPoint_2.x() != 0 && localPoint_2.y() != 0 ){
         drawLineXY(image);
     }
-    if(reco.pos.x()!=0){
+    if(param.pos.x()!=0){
         visulizeSliceXY(image);
     }
      ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
@@ -190,10 +193,20 @@ void ImageLoader::updateSliceView(){
             image.setPixel(i,j, qRgb(iGrauwert, iGrauwert, iGrauwert));
         }
     }
+    if(ui->checkBox_showBoring->checkState()){
+        drawBoringCircle(image);
+        double boringLength;
+        int a = MyLib::calculateBoringLength(localPoint_1,localPoint_2,m_pData->getImage3D().pixelSpacingXY,m_pData->getImage3D().pixelSpacingZ,boringLength);
+        ui->lineEdit_boringlength->setValue(boringLength);
+    }
+
+
     ui->label_slice_image->setPixmap(QPixmap::fromImage(image));
 }
+void ImageLoader::drawSlice(){
 
 
+}
 
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
@@ -211,13 +224,16 @@ void ImageLoader::mousePressEvent(QMouseEvent *event)
         if(event->button() == Qt::LeftButton){
             localPoint_1.x() = localPosXY.x();
             localPoint_1.y() = localPosXY.y();
-            ui ->label_point1Coordinate->setText(MyLib::updatePointslabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            ui->lineEdit_P1_X->setValue(localPoint_1.x());
+            ui->lineEdit_P1_Y->setValue(localPoint_1.y());
+
             updateAllViews();
         }
         else if(event->button() == Qt::RightButton){
             localPoint_2.x() = localPosXY.x();
             localPoint_2.y() = localPosXY.y();
-            ui ->label_point2Coordinate->setText(MyLib::updatePointslabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            ui->lineEdit_P2_X->setValue(localPoint_2.x());
+            ui->lineEdit_P2_Y->setValue(localPoint_2.y());
             updateAllViews();
         }
     }
@@ -225,12 +241,12 @@ void ImageLoader::mousePressEvent(QMouseEvent *event)
         // check for risks. for choosing a point
         if(event->button() == Qt::LeftButton){
             localPoint_1.z() = localPosXZ.y();
-            ui ->label_point1Coordinate->setText(MyLib::updatePointslabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            ui->lineEdit_P1_Z->setValue(localPoint_1.z());
             updateAllViews();
         }
         else if(event->button() == Qt::RightButton){
             localPoint_2.z() = localPosXZ.y();
-            ui ->label_point2Coordinate->setText(MyLib::updatePointslabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            ui->lineEdit_P2_Z->setValue(localPoint_2.z());
             updateAllViews();
         }
      }
@@ -240,6 +256,26 @@ void ImageLoader::drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int d
         image.setPixel(point.x(),z, qRgb(255, 0, 0));
      }
 }
+void ImageLoader::drawBoringCircle(QImage &image){
+    double boringD = ui->doubleSpinBox_boring_Diam ->value();
+    double i0 = reco_im2D->width/2;
+        double j0 = reco_im2D->height/2;
+        for (float i = 0; i < reco_im2D->width; i = i+0.1) {
+            // circle equation: (i-i0)^2 + (j-j0)^2 = r^2
+            double scaledRadius = boringD/2*param.scale;
+            double deltaj2 = pow(scaledRadius,2) - pow(i-i0,2);
+            if (deltaj2<0)
+                continue;
+            double dj1 = pow(deltaj2,.5) + j0;
+            int j1 = (int)dj1;
+            double dj2 = -pow(deltaj2,.5) + j0;
+            int j2 = (int)dj2;
+            if (j1> 0 && j2>0 && j1<reco_im2D->height && j2<reco_im2D->height){
+                image.setPixel(i,j1, qRgb(255, 0, 0));
+                image.setPixel(i,j2, qRgb(255, 0, 0));
+            }
+        }
+};
 
 void ImageLoader::drawLineXY(QImage &image)
 {
@@ -266,138 +302,67 @@ void ImageLoader::drawLineXZ(QImage &image)
     }
 }
 void ImageLoader::reconstructSlice(){
-    double percentage = ui->slider_slice_currentLayer->value();
+    double slicePercentage = ui->slider_slice_currentLayer->value();
+    double rotGrade = ui->slider_slice_rotGrade->value();
+    param.scale = ui->slider_slice_scale->value();
     Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
     Eigen::Vector3d normedNormalVector = normalVector.normalized();
-    Eigen::Vector3d notRoundedLine = (percentage/100.0)*normalVector + localPoint_1;
+    Eigen::Vector3d notRoundedLine = (slicePercentage/100.0)*normalVector + localPoint_1;
 
-    reco.pos.x() = (int)round(notRoundedLine.x());
-    reco.pos.y() = (int)round(notRoundedLine.y());
-    reco.pos.z() = (int)round(notRoundedLine.z());
-    ui ->label_slicerCoordinate->setText(MyLib::updatePointslabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
+    param.pos.x() = (int)round(notRoundedLine.x());
+    param.pos.y() = (int)round(notRoundedLine.y());
+    param.pos.z() = (int)round(notRoundedLine.z());
+    ui->lineEdit_Slicer_X->setValue(param.pos.x());
+    ui->lineEdit_Slicer_Y->setValue(param.pos.y());
+    ui->lineEdit_Slicer_Z->setValue(param.pos.z());
+    //ui ->label_slicerCoordinate->setText(MyLib::updatePointslabel(param.pos.x(),param.pos.y(),param.pos.z()));
 
 
     //--------------------------------------------------------------------
-    double a = normalVector.x();
-    double b = normalVector.y();
-    double c = normalVector.z();
 
-    double rotGrade = ui->slider_slice_rotGrade->value();
-
-
-
-    //double d = a*reco.pos.x() + b*reco.pos.y() + c*reco.pos.z();
-        // we want to define to orthogonal vectors which describe our plane
-        // there are infit such vectors, since there are infinit lines on a plane
-        // so we just define that xdir has no z component, and its component has the length of 1
-        // also we define that ydir has x comonent of length 1. Later we can normalize both vectors.
-        // consider xdir=(1, y1, 0) ; ydir=(1, y2, z2)
-        // xdir and ydir are orthogonal, e.a (xdir.ydir = 0)
-        // and both xdir and ydir are placed on the plan and should satisfy the plane equation.
-        // so we get xdir and ydir as following:
-
-
-        // special cases:
-        if (a==0 && b==0){
-            reco.xdir.x() = 1;
-            reco.xdir.y() = 0;
-            reco.xdir.z() = 0;
-            reco.ydir = normedNormalVector.cross(reco.xdir);
+        if (normalVector.x()==0 && normalVector.y()==0){
+            Eigen::Vector3d tempVector(1,0,0);
+            //to rotate the vector:
+            MyLib::rotateSlice(normalVector,rotGrade,tempVector);
+            param.xdir = tempVector;
+            //crossproduct of the normalvector and one direction vector
+            param.ydir = normedNormalVector.cross(param.xdir);
         }
-        else if(a==0 && c==0){
-            reco.xdir.x() = 1;
-            reco.xdir.y() = 0;
-            reco.xdir.z() = 0;
-            reco.ydir = normedNormalVector.cross(reco.xdir);
+        else if(normalVector.x()==0 && normalVector.z()==0){
+            Eigen::Vector3d tempVector(1,0,0);
+            //to rotate the vector:
+            MyLib::rotateSlice(normalVector,rotGrade,tempVector);
+            param.xdir = tempVector;
+            //crossproduct of the normalvector and one direction vector
+            param.ydir = normedNormalVector.cross(param.xdir);
         }
-        else if(b==0 && c==0){
-            reco.xdir.x() = 0;
-            reco.xdir.y() = 1;
-            reco.xdir.z() = 0;
-            reco.ydir = normedNormalVector.cross(reco.xdir);
+        else if(normalVector.y()==0 && normalVector.z()==0){
+            Eigen::Vector3d tempVector(0,1,0);
+            //to rotate the vector:
+            MyLib::rotateSlice(normalVector,rotGrade,tempVector);
+            param.xdir = tempVector;
+            //crossproduct of the normalvector and one direction vector
+            param.ydir = normedNormalVector.cross(param.xdir);
         }
         else{
-            //reco.xdir.x() = b;
-            //reco.xdir.y() = -a;
-            //reco.xdir.z() = 0;
-            Eigen::Vector3d temp(b,-a,0);
-            //temp.normalize();
-            MyLib::rotateSlice(normalVector,rotGrade,temp);
-            reco.xdir = temp;
-            reco.ydir = normedNormalVector.cross(reco.xdir);
-
-            //reco.ydir.x() = c*a;
-            //reco.ydir.y() = c*b;
-            //reco.ydir.z() = (-a*a - b*b);
+            Eigen::Vector3d tempVector(normalVector.y(),-normalVector.x(),0);
+            //to rotate the vector:
+            MyLib::rotateSlice(normalVector,rotGrade,tempVector);
+            param.xdir = tempVector;
+            //crossproduct of the normalvector and one direction vector
+            param.ydir = normedNormalVector.cross(param.xdir);
         }
-        reco.xdir.normalize();
-        reco.ydir.normalize();
-                //normalize xdir and ydir
-        //double xdirLength = reco.xdir.norm();
-        //double ydirLength = reco.ydir.norm();
-        //reco.xdir.x() /= xdirLength;
-        //reco.xdir.y() /= xdirLength;
-        //reco.xdir.z() /= xdirLength;
-
-        //reco.ydir.x() /= ydirLength;
-        //reco.ydir.y() /= ydirLength;
-        //reco.ydir.z() /= ydirLength;
-
-
-
+        param.xdir.normalize();
+        param.ydir.normalize();
 
         //--------------------------------------------------------------
         const image3D tmp_imageData3D = m_pData->getImage3D();
 
         //image2D reco_im2D =  image2D(512,512);
-        int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
+        int err_stat = MyLib::getSlice(tmp_imageData3D, param, *reco_im2D);
        // drawDrillTrajectory = true;
         //updateView();
         //updateAllLabels();
-
-    /**
-
-    //reco.xdir = normalVector;
-
-    reco.xdir.x() = 0;
-    reco.xdir.y() = normalVector.z();
-    reco.xdir.z() = -normalVector.y();
-
-    reco.ydir.x() = normalVector.z();
-    reco.ydir.y() = 0;
-    reco.ydir.z() = -normalVector.x();
-
-
-
-
-    double d = normalVector.x()*reco.pos.x() + normalVector.y()*reco.pos.y() + normalVector.z()*reco.pos.z();
-
-    // equation on plane: ax + by + cz = d
-    // also we know that the point reco.pos is place on the plan
-    //double d = a*reco.pos.x + b*reco.pos.y + c*reco.pos.z;
-    // consider xdir=(1, y1, 0) ; ydir=(1, y2, z2)
-    // xdir and ydir are orthogonal, e.a (xdir.ydir = 0)
-    // and both xdir and ydir are placed on the plan and should satisfy the plane equation
-    // so the result is the following:
-    reco.xdir.x() = 1;
-    reco.xdir.y() = -normalVector.x()/normalVector.y();
-    reco.xdir.z() = 0;
-
-    reco.ydir.x() = 1;
-    reco.ydir.y() = normalVector.y()/normalVector.x();
-    reco.ydir.z() = (-normalVector.x()-pow(normalVector.y(),2)/normalVector.x())/normalVector.z();
-
-    reco.posPara.x() = 0;
-    reco.posPara.y() = 0;
-    reco.posPara.z() = d/normalVector.z();
-
-    **/
-
-
-    //image2D reco_im2D =  image2D(512,512);
-    //int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
-    //drawDrillTrajectory = true;
-    //updateView();
 }
 void ImageLoader::visulizeSliceXZ(QImage &image){
     Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
@@ -406,7 +371,7 @@ void ImageLoader::visulizeSliceXZ(QImage &image){
     Eigen::Vector3d orthogonalVector(-tanLine.z(),0,tanLine.x());
 
     for (int l=-100; l<=100; l++){
-        line = reco.pos + orthogonalVector*l;
+        line = param.pos + orthogonalVector*l;
         if (line.x()>=0 && line.x()<512 && line.z()>=0 && line.z()<256){
             image.setPixel(line.x(),line.z(), qRgb(255, 255, 0));
         }
@@ -419,7 +384,7 @@ void ImageLoader::visulizeSliceXY(QImage &image){
     Eigen::Vector3d orthogonalVector(-tanLine.y(),tanLine.x(),0);
 
     for (int l=-100; l<=100; l++){
-        line = reco.pos + orthogonalVector*l;
+        line = param.pos + orthogonalVector*l;
         if (line.x()>=0 && line.x()<512 && line.y()>=0 && line.y()<512){
             image.setPixel(line.x(),line.y(), qRgb(255, 255, 0));
         }
@@ -498,6 +463,14 @@ void ImageLoader::updatedSliceWindowingThreshold(int value)
 void ImageLoader::updatedSliceRotGrade(int value)
 {
     ui ->label_slice_rotationAngel->setText(QString::number(value)+ "°" );
+    reconstructSlice();
+    updateAllViews();
+    updateSliceView();
+}
+
+void ImageLoader::updatedSliceScale(int value)
+{
+    ui ->label_slice_scale->setText("Scale: " + QString::number(value));
     reconstructSlice();
     updateAllViews();
     updateSliceView();
