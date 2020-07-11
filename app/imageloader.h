@@ -52,7 +52,6 @@ private slots:
     void updateXYView();
     void updateXZView();
     void updateSliceView();
-    QString updatePointlabel(int x, int y, int z);
     void reconstructSlice();
     void visulizeSliceXY(QImage &image);
     void visulizeSliceXZ(QImage &image);

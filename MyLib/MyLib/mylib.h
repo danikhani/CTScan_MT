@@ -3,6 +3,7 @@
 
 #include "MyLib_global.h"
 #include "Eigen/Core"
+#include <QString>
 
 
 struct image3D{
@@ -64,6 +65,7 @@ public:
     * \return 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
     */
     static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
+    static QString updatePointslabel(int x, int y, int z);
 };
 
 #endif // MYLIB_H

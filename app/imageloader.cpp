@@ -36,6 +36,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     localPoint_2.z() = 0;
 
     reco_im2D =  new image2D(512,512);
+    //image3D tmp_imageData3D = m_pData->getImage3D();
 }
 
 ImageLoader::~ImageLoader()
@@ -193,14 +194,9 @@ void ImageLoader::updateSliceView(){
 
 
 
-QString ImageLoader::updatePointlabel(int x, int y, int z){
-    auto printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
-    return printable;
-}
-
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
-    const image3D tmp_imageData3D = m_pData->getImage3D();
+    //const image3D tmp_imageData3D = m_pData->getImage3D();
     int x = event->x();
     int y = event->y();
     QPoint globalPos;
@@ -214,13 +210,13 @@ void ImageLoader::mousePressEvent(QMouseEvent *event)
         if(event->button() == Qt::LeftButton){
             localPoint_1.x() = localPosXY.x();
             localPoint_1.y() = localPosXY.y();
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            ui ->label_point1Coordinate->setText(MyLib::updatePointslabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
             updateAllViews();
         }
         else if(event->button() == Qt::RightButton){
             localPoint_2.x() = localPosXY.x();
             localPoint_2.y() = localPosXY.y();
-            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            ui ->label_point2Coordinate->setText(MyLib::updatePointslabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
             updateAllViews();
         }
     }
@@ -228,12 +224,12 @@ void ImageLoader::mousePressEvent(QMouseEvent *event)
         // check for risks. for choosing a point
         if(event->button() == Qt::LeftButton){
             localPoint_1.z() = localPosXZ.y();
-            ui ->label_point1Coordinate->setText(updatePointlabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
+            ui ->label_point1Coordinate->setText(MyLib::updatePointslabel(localPoint_1.x(),localPoint_1.y(),localPoint_1.z()));
             updateAllViews();
         }
         else if(event->button() == Qt::RightButton){
             localPoint_2.z() = localPosXZ.y();
-            ui ->label_point2Coordinate->setText(updatePointlabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
+            ui ->label_point2Coordinate->setText(MyLib::updatePointslabel(localPoint_2.x(),localPoint_2.y(),localPoint_2.z()));
             updateAllViews();
         }
      }
@@ -276,10 +272,86 @@ void ImageLoader::reconstructSlice(){
     reco.pos.x() = (int)round(notRounded.x());
     reco.pos.y() = (int)round(notRounded.y());
     reco.pos.z() = (int)round(notRounded.z());
+    ui ->label_slicerCoordinate->setText(MyLib::updatePointslabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
 
-    ui ->label_slicerCoordinate->setText(updatePointlabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
 
-    Eigen::Vector3d normlizedTan = normalVector.normalized();
+    //--------------------------------------------------------------------
+    double a = normalVector.x();
+    double b = normalVector.y();
+    double c = normalVector.z();
+
+    //double d = a*reco.pos.x() + b*reco.pos.y() + c*reco.pos.z();
+        // we want to define to orthogonal vectors which describe our plane
+        // there are infit such vectors, since there are infinit lines on a plane
+        // so we just define that xdir has no z component, and its component has the length of 1
+        // also we define that ydir has x comonent of length 1. Later we can normalize both vectors.
+        // consider xdir=(1, y1, 0) ; ydir=(1, y2, z2)
+        // xdir and ydir are orthogonal, e.a (xdir.ydir = 0)
+        // and both xdir and ydir are placed on the plan and should satisfy the plane equation.
+        // so we get xdir and ydir as following:
+
+
+        // special cases:
+        if (a==0 && b==0){
+            reco.xdir.x() = 1;
+            reco.xdir.y() = 0;
+            reco.xdir.z() = 0;
+
+            reco.ydir.x() = 0;
+            reco.ydir.y() = 1;
+            reco.ydir.z() = 0;
+        }
+        else if(a==0 && c==0){
+            reco.xdir.x() = 1;
+            reco.xdir.y() = 0;
+            reco.xdir.z() = 0;
+
+            reco.ydir.x() = 0;
+            reco.ydir.y() = 0;
+            reco.ydir.z() = 1;
+        }
+        else if(b==0 && c==0){
+            reco.xdir.x() = 0;
+            reco.xdir.y() = 1;
+            reco.xdir.z() = 0;
+
+            reco.ydir.x() = 0;
+            reco.ydir.y() = 0;
+            reco.ydir.z() = 1;
+        }
+        else{
+            reco.xdir.x() = b;
+            reco.xdir.y() = -a;
+            reco.xdir.z() = 0;
+
+            reco.ydir.x() = c*a;
+            reco.ydir.y() = c*b;
+            reco.ydir.z() = (-a*a - b*b);
+        }
+        reco.xdir.normalize();
+        reco.ydir.normalize();
+                //normalize xdir and ydir
+        //double xdirLength = reco.xdir.norm();
+        //double ydirLength = reco.ydir.norm();
+        //reco.xdir.x() /= xdirLength;
+        //reco.xdir.y() /= xdirLength;
+        //reco.xdir.z() /= xdirLength;
+
+        //reco.ydir.x() /= ydirLength;
+        //reco.ydir.y() /= ydirLength;
+        //reco.ydir.z() /= ydirLength;
+
+        // get the data from the database
+        const image3D tmp_imageData3D = m_pData->getImage3D();
+
+        //image2D reco_im2D =  image2D(512,512);
+        int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
+       // drawDrillTrajectory = true;
+        //updateView();
+        //updateAllLabels();
+
+    /**
+
     //reco.xdir = normalVector;
 
     reco.xdir.x() = 0;
@@ -291,7 +363,7 @@ void ImageLoader::reconstructSlice(){
     reco.ydir.z() = -normalVector.x();
 
 
-    /**
+
 
     double d = normalVector.x()*reco.pos.x() + normalVector.y()*reco.pos.y() + normalVector.z()*reco.pos.z();
 
@@ -316,10 +388,9 @@ void ImageLoader::reconstructSlice(){
 
     **/
 
-    const image3D tmp_imageData3D = m_pData->getImage3D();
 
     //image2D reco_im2D =  image2D(512,512);
-    int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
+    //int err_stat = MyLib::getSlice(tmp_imageData3D, reco, *reco_im2D);
     //drawDrillTrajectory = true;
     //updateView();
 }
