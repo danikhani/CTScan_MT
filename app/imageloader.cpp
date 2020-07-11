@@ -27,6 +27,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_slice_width, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingWidth(int)));
     connect(ui->slider_slice_currentLayer, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceCurrentLayer(int)));
     connect(ui->slider_slice_threshold, SIGNAL(valueChanged(int)), this, SLOT(updatedXZWindowingThreshold(int)));
+    connect(ui->slider_slice_rotGrade, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceRotGrade(int)));
 
     localPoint_1.x() = 0;
     localPoint_1.y() = 0;
@@ -267,11 +268,12 @@ void ImageLoader::drawLineXZ(QImage &image)
 void ImageLoader::reconstructSlice(){
     double percentage = ui->slider_slice_currentLayer->value();
     Eigen::Vector3d normalVector = localPoint_2 - localPoint_1;
-    Eigen::Vector3d notRounded = (percentage/100.0)*normalVector + localPoint_1;
+    Eigen::Vector3d normedNormalVector = normalVector.normalized();
+    Eigen::Vector3d notRoundedLine = (percentage/100.0)*normalVector + localPoint_1;
 
-    reco.pos.x() = (int)round(notRounded.x());
-    reco.pos.y() = (int)round(notRounded.y());
-    reco.pos.z() = (int)round(notRounded.z());
+    reco.pos.x() = (int)round(notRoundedLine.x());
+    reco.pos.y() = (int)round(notRoundedLine.y());
+    reco.pos.z() = (int)round(notRoundedLine.z());
     ui ->label_slicerCoordinate->setText(MyLib::updatePointslabel(reco.pos.x(),reco.pos.y(),reco.pos.z()));
 
 
@@ -279,6 +281,10 @@ void ImageLoader::reconstructSlice(){
     double a = normalVector.x();
     double b = normalVector.y();
     double c = normalVector.z();
+
+    double rotGrade = ui->slider_slice_rotGrade->value();
+
+
 
     //double d = a*reco.pos.x() + b*reco.pos.y() + c*reco.pos.z();
         // we want to define to orthogonal vectors which describe our plane
@@ -296,37 +302,33 @@ void ImageLoader::reconstructSlice(){
             reco.xdir.x() = 1;
             reco.xdir.y() = 0;
             reco.xdir.z() = 0;
-
-            reco.ydir.x() = 0;
-            reco.ydir.y() = 1;
-            reco.ydir.z() = 0;
+            reco.ydir = normedNormalVector.cross(reco.xdir);
         }
         else if(a==0 && c==0){
             reco.xdir.x() = 1;
             reco.xdir.y() = 0;
             reco.xdir.z() = 0;
-
-            reco.ydir.x() = 0;
-            reco.ydir.y() = 0;
-            reco.ydir.z() = 1;
+            reco.ydir = normedNormalVector.cross(reco.xdir);
         }
         else if(b==0 && c==0){
             reco.xdir.x() = 0;
             reco.xdir.y() = 1;
             reco.xdir.z() = 0;
-
-            reco.ydir.x() = 0;
-            reco.ydir.y() = 0;
-            reco.ydir.z() = 1;
+            reco.ydir = normedNormalVector.cross(reco.xdir);
         }
         else{
-            reco.xdir.x() = b;
-            reco.xdir.y() = -a;
-            reco.xdir.z() = 0;
+            //reco.xdir.x() = b;
+            //reco.xdir.y() = -a;
+            //reco.xdir.z() = 0;
+            Eigen::Vector3d temp(b,-a,0);
+            //temp.normalize();
+            MyLib::rotateSlice(normalVector,rotGrade,temp);
+            reco.xdir = temp;
+            reco.ydir = normedNormalVector.cross(reco.xdir);
 
-            reco.ydir.x() = c*a;
-            reco.ydir.y() = c*b;
-            reco.ydir.z() = (-a*a - b*b);
+            //reco.ydir.x() = c*a;
+            //reco.ydir.y() = c*b;
+            //reco.ydir.z() = (-a*a - b*b);
         }
         reco.xdir.normalize();
         reco.ydir.normalize();
@@ -341,7 +343,10 @@ void ImageLoader::reconstructSlice(){
         //reco.ydir.y() /= ydirLength;
         //reco.ydir.z() /= ydirLength;
 
-        // get the data from the database
+
+
+
+        //--------------------------------------------------------------
         const image3D tmp_imageData3D = m_pData->getImage3D();
 
         //image2D reco_im2D =  image2D(512,512);
@@ -487,6 +492,14 @@ void ImageLoader::updatedSliceCurrentLayer(int value)
 void ImageLoader::updatedSliceWindowingThreshold(int value)
 {
     ui ->label_slice_threshold->setText("Threshold:" + QString::number(value));
+    updateSliceView();
+}
+
+void ImageLoader::updatedSliceRotGrade(int value)
+{
+    ui ->label_slice_rotationAngel->setText(QString::number(value)+ "°" );
+    reconstructSlice();
+    updateAllViews();
     updateSliceView();
 }
 

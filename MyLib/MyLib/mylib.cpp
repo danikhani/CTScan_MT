@@ -71,5 +71,38 @@ QString MyLib::updatePointslabel(int x, int y, int z){
     QString printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
     return printable;
 }
+int MyLib::rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen::Vector3d& rotatedVector){
+    double alpha = 2*M_PI /360 * rotationGrade ;
+
+    Eigen::Vector3d normedNormalVector = normalVector.normalized();
+
+    double x  = normedNormalVector.x();
+    double y = normedNormalVector.y();
+    double z = normedNormalVector.z();
+
+    double s = sin(alpha);
+    double c = cos(alpha);
+    double mc = 1 - c;
+
+    //rotation matrix
+    //source: https://www.geogebra.org/m/fdmmvvma
+    Eigen::Matrix3d rotationMatrix;
+    rotationMatrix(0,0) = c + x * x * mc;
+    rotationMatrix(0,1) = x * y * mc - z * s;
+    rotationMatrix(0,2) =  x * z * mc + y * s;
+
+    rotationMatrix(1,0) = x * y * mc + z * s;
+    rotationMatrix(1,1) = c + y * y * mc;
+    rotationMatrix(1,2) = y * z * mc - x * s;
+
+    rotationMatrix(2,0) = x * z * mc - y * s;
+    rotationMatrix(2,1) = y * z * mc + x * s;
+    rotationMatrix(2,2) = c + z * z * mc;
+
+    rotatedVector = rotationMatrix * rotatedVector;
+
+
+    return 1;
+}
 
 

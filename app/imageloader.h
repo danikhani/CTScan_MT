@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QInputDialog>
+#include <Eigen/Geometry>
 
 namespace Ui {
 class ImageLoader;
@@ -82,6 +83,7 @@ private slots:
     void updatedSliceWindowingWidth(int value);
     void updatedSliceCurrentLayer(int value);
     void updatedSliceWindowingThreshold(int value);
+    void updatedSliceRotGrade(int value);
 
 
 
