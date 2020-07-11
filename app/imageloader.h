@@ -55,19 +55,24 @@ private slots:
     void updateXYView();
     void updateXZView();
     void updateSliceView();
+
+    void drawXYPixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange);
+    void drawNormalVectorXY(QImage &image);
+    void visualizeSliceXY(image3D tmp_imageData3D,QImage &image);
+
+    void drawXZPixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange);
+    void drawNormalVectorXZ(QImage &image);
+    void drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth);
+    void visualizeSliceXZ(image3D tmp_imageData3D,QImage &image);
+
+    void drawSlicePixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange);
+    void drawBoringCircle(QImage &image);
     void reconstructSlice();
-    void visulizeSliceXY(QImage &image);
-    void visulizeSliceXZ(QImage &image);
-
-
 
     //void updatedTiefenKarte();
     //void update3DReflection();
     void mousePressEvent(QMouseEvent *event);
-    void drawLineXY(QImage &image);
-    void drawLineXZ(QImage &image);
-    void drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int depth);
-    void drawBoringCircle(QImage &image);
+
 
     // show values of xy sliders
     void updatedXYWindowingStart(int value);

@@ -12,7 +12,8 @@ sweidmt::sweidmt(QWidget *parent)
     ui ->tabWidget->addTab(m_pImageLoader, "LoadImage");
     m_pImageLoader->setData(&m_Data);
 
-    connect(m_pImageLoader, SIGNAL(LOG(QString)), this, SLOT(LOG(QString)));
+    connect(m_pImageLoader, SIGNAL(LOG_State(QString)), this, SLOT(LOG_State(QString)));
+    connect(m_pImageLoader, SIGNAL(LOG_Instructions(QString)), this, SLOT(LOG_Instructions(QString)));
 
 
 }

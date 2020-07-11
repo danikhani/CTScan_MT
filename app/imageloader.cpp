@@ -41,6 +41,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     reco_im2D =  new image2D(512,512);
     //image3D tmp_imageData3D = m_pData->getImage3D();
     scale = 1;
+    //const image3D tmp_imageData3D = m_pData->getImage3D();
 }
 
 ImageLoader::~ImageLoader()
@@ -58,6 +59,8 @@ void ImageLoader::ReadFile(){
     // give files to m-pdata
     bool status = m_pData->uploadImage(imagePath);
     //update 3Dview
+    LOG_State("wtttf");
+    LOG_Instructions("yoooo");
 
     if(status == 1){
         updateAllViews();
@@ -76,87 +79,45 @@ void ImageLoader::updateXYView(){
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
     //ui elements
+    int numberHUOutOfRange;
+    int numberWindowingOutOfRange;
     QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
-    int startSlider = ui->slider_xy_start->value();
-    int widthSlider = ui->slider_xy_width ->value();
-    int currentLayerSlider = ui->slider_xy_currentLayer->value();
-    int thresholdSlider = ui->slider_xy_threshold ->value();
-    // values for the algorithem
-    int imageDataPosition = 0;
-    int iGrauwert;
-    int hu_value;
-    int number_HU_OutOfRange = 0;
-    int number_windowing_OutOfRange = 0;
-    for(int y = 0 ; y < tmp_imageData3D.width; y++){
-        for(int x = 0 ; x < tmp_imageData3D.height; x++){
-             imageDataPosition = x * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*currentLayerSlider ;
-             hu_value = tmp_imageData3D.pImage[imageDataPosition];
-             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
-             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
-             if(windowingError == -1){
-                 number_HU_OutOfRange++;
-             }
-             if(windowingError == -2){
-                 number_windowing_OutOfRange++;
-             }
-             if(hu_value <= thresholdSlider){
-                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
-             }else{
-                 image.setPixel(y, x, qRgb(255,0,0));
-             }
-        }
-    }
+    // draw the pixels
+    drawXYPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
+
 
     //draw the line
     if(localPoint_1.x() != 0 && localPoint_1.y() != 0 && localPoint_2.x() != 0 && localPoint_2.y() != 0 ){
-        drawLineXY(image);
+        drawNormalVectorXY(image);
     }
     if(param.pos.x()!=0){
-        visulizeSliceXY(image);
+        visualizeSliceXY(tmp_imageData3D,image);
     }
      ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
 
 
-    QString outOfRangeNumber;
-    outOfRangeNumber.setNum(number_HU_OutOfRange);
-    QString messagetext = "times was/were HU_Value out of Range";
-    outOfRangeNumber += messagetext;
-    //emit LOG(outOfRangeNumber);
+    //error number of HU out of range
+    QString huOutOfRangeNumber;
+    huOutOfRangeNumber.setNum(numberHUOutOfRange);
+    QString messagetext = "times was/were HU_Value out of Range while loading XY view";
+    huOutOfRangeNumber += messagetext;
+    emit LOG_State(huOutOfRangeNumber);
+    //error number of Windowing out of range
+    QString WindowingOutOfRange;
+    WindowingOutOfRange.setNum(numberHUOutOfRange);
+    QString messagetextWindowing = "times was/were Windowing value out of Range while loading XY view";
+    WindowingOutOfRange += messagetext;
+    emit LOG_State(WindowingOutOfRange);
 }
 void ImageLoader::updateXZView(){
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
     //ui elements
     QImage image(tmp_imageData3D.width,tmp_imageData3D.slices, QImage::Format_RGB32);
-    int startSlider = ui->slider_xz_start->value();
-    int widthSlider = ui->slider_xz_width ->value();
-    int currentLayerSlider = ui->slider_xz_currentLayer->value();
-    int thresholdSlider = ui->slider_xz_threshold ->value();
-    // values for the algorithem
-    int imageDataPosition = 0;
-    int iGrauwert;
-    int hu_value;
-    int number_HU_OutOfRange = 0;
-    int number_windowing_OutOfRange = 0;
-    for(int y = 0 ; y < tmp_imageData3D.width; y++){
-        for(int x = 0 ; x < tmp_imageData3D.slices ; x++){
-             imageDataPosition = currentLayerSlider * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*x ;
-             hu_value = tmp_imageData3D.pImage[imageDataPosition];
-             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
-             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
-             if(windowingError == -1){
-                 number_HU_OutOfRange++;
-             }
-             if(windowingError == -2){
-                 number_windowing_OutOfRange++;
-             }
-             if(hu_value <= thresholdSlider){
-                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
-             }else{
-                 image.setPixel(y, x, qRgb(255,0,0));
-             }
-        }
-    }
+    int numberHUOutOfRange;
+    int numberWindowingOutOfRange;
+    // draw the pixels
+    drawXZPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
     if(localPoint_1.x() != 0){
         drawVerticalXZLine(image,localPoint_1, tmp_imageData3D.slices);
@@ -165,13 +126,13 @@ void ImageLoader::updateXZView(){
         drawVerticalXZLine(image,localPoint_2, tmp_imageData3D.slices);
     }
     if(localPoint_1.z()!=0 && localPoint_2.z()!=0){
-        drawLineXZ(image);
+        drawNormalVectorXZ(image);
     }
-    visulizeSliceXZ(image);
+    visualizeSliceXZ(tmp_imageData3D,image);
     ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
 
     QString outOfRangeNumber;
-    outOfRangeNumber.setNum(number_HU_OutOfRange);
+    outOfRangeNumber.setNum(numberHUOutOfRange);
     QString messagetext = "times was/were HU_Value out of Range";
     outOfRangeNumber += messagetext;
     //emit LOG(outOfRangeNumber);
@@ -180,19 +141,12 @@ void ImageLoader::updateXZView(){
 void ImageLoader::updateSliceView(){
     const image3D tmp_imageData3D = m_pData->getImage3D();
     QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
+    int numberHUOutOfRange;
+    int numberWindowingOutOfRange;
+    // draw the pixels
+    drawSlicePixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
-    int startSlider = ui->slider_slice_start->value();
-    int widthSlider = ui->slider_slice_width ->value();
-    int thresholdSlider = ui->slider_slice_threshold ->value();
-    int iGrauwert;
-    int hu_value;
-    for (int i = 0; i < tmp_imageData3D.width; i++){
-        for (int j = 0; j < tmp_imageData3D.height; j++){
-            hu_value = reco_im2D->pImage[i + 512*j];
-            int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
-            image.setPixel(i,j, qRgb(iGrauwert, iGrauwert, iGrauwert));
-        }
-    }
+
     if(ui->checkBox_showBoring->checkState()){
         drawBoringCircle(image);
         double boringLength;
@@ -202,6 +156,144 @@ void ImageLoader::updateSliceView(){
 
 
     ui->label_slice_image->setPixmap(QPixmap::fromImage(image));
+}
+void ImageLoader::drawXYPixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange){
+    int startSlider = ui->slider_xy_start->value();
+    int widthSlider = ui->slider_xy_width ->value();
+    int currentLayerSlider = ui->slider_xy_currentLayer->value();
+    int thresholdSlider = ui->slider_xy_threshold ->value();
+    // values for the algorithem
+    int imageDataPosition = 0;
+    int iGrauwert;
+    int hu_value;
+    for(int y = 0 ; y < tmp_imageData3D.width; y++){
+        for(int x = 0 ; x < tmp_imageData3D.height; x++){
+             imageDataPosition = x * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*currentLayerSlider ;
+             hu_value = tmp_imageData3D.pImage[imageDataPosition];
+             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
+             if(windowingError == -1){
+                 numberHUOutOfRange++;
+             }
+             if(windowingError == -2){
+                 numberWindowingOutOfRange++;
+             }
+             if(hu_value <= thresholdSlider){
+                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
+             }else{
+                 image.setPixel(y, x, qRgb(255,0,0));
+             }
+        }
+    }
+
+}
+
+
+void ImageLoader::drawXZPixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange){
+    int startSlider = ui->slider_xz_start->value();
+    int widthSlider = ui->slider_xz_width ->value();
+    int currentLayerSlider = ui->slider_xz_currentLayer->value();
+    int thresholdSlider = ui->slider_xz_threshold ->value();
+    // values for the algorithem
+    int imageDataPosition = 0;
+    int iGrauwert;
+    int hu_value;
+    for(int y = 0 ; y < tmp_imageData3D.width; y++){
+        for(int x = 0 ; x < tmp_imageData3D.slices ; x++){
+             imageDataPosition = currentLayerSlider * tmp_imageData3D.width + y + tmp_imageData3D.width*tmp_imageData3D.height*x ;
+             hu_value = tmp_imageData3D.pImage[imageDataPosition];
+             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
+             if(windowingError == -1){
+                 numberHUOutOfRange++;
+             }
+             if(windowingError == -2){
+                 numberWindowingOutOfRange++;
+             }
+             if(hu_value <= thresholdSlider){
+                image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
+             }else{
+                 image.setPixel(y, x, qRgb(255,0,0));
+             }
+        }
+    }
+}
+void ImageLoader::drawSlicePixels(image3D tmp_imageData3D, QImage &image,int &numberHUOutOfRange, int &numberWindowingOutOfRange){
+    int startSlider = ui->slider_slice_start->value();
+    int widthSlider = ui->slider_slice_width ->value();
+    int thresholdSlider = ui->slider_slice_threshold ->value();
+    int iGrauwert;
+    int hu_value;
+    for (int y = 0; y < tmp_imageData3D.width; y++){
+        for (int x = 0; x < tmp_imageData3D.height; x++){
+            hu_value = reco_im2D->pImage[y + 512*x];
+            int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
+            image.setPixel(y,x, qRgb(iGrauwert, iGrauwert, iGrauwert));
+            //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
+            if(windowingError == -1){
+                numberHUOutOfRange++;
+            }
+            if(windowingError == -2){
+                numberWindowingOutOfRange++;
+            }
+            if(hu_value <= thresholdSlider){
+               image.setPixel(y, x,qRgb(iGrauwert, iGrauwert, iGrauwert));
+            }else{
+               image.setPixel(y, x, qRgb(255,0,0));
+            }
+        }
+    }
+
+}
+void ImageLoader::drawNormalVectorXY(QImage &image)
+{
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (double i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
+    }
+}
+void ImageLoader::drawNormalVectorXZ(QImage &image)
+{
+    Eigen::Vector3d tanLine;
+    Eigen::Vector3d line;
+    tanLine = localPoint_2 - localPoint_1;
+    double norm = tanLine.norm();
+    tanLine.normalize();
+    for (double i = 0; i < norm; i++) {
+        line = tanLine*i + localPoint_1;
+        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
+    }
+}
+void ImageLoader::visualizeSliceXZ(image3D tmp_imageData3D,QImage &image){
+    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
+    Eigen::Vector3d line;
+    tanLine.normalize();
+    Eigen::Vector3d orthogonalVector(-tanLine.z(),0,tanLine.x());
+
+    for (int l=-100; l<=100; l++){
+        line = param.pos + orthogonalVector*l;
+        if (line.x()>=0 && line.x()<tmp_imageData3D.width && line.z()>=0 && line.z()<tmp_imageData3D.slices){
+            image.setPixel(line.x(),line.z(), qRgb(255, 255, 0));
+        }
+    }
+}
+void ImageLoader::visualizeSliceXY(image3D tmp_imageData3D,QImage &image){
+    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
+    Eigen::Vector3d line;
+    tanLine.normalize();
+    Eigen::Vector3d orthogonalVector(-tanLine.y(),tanLine.x(),0);
+
+    for (int l=-100; l<=100; l++){
+        line = param.pos + orthogonalVector*l;
+        if (line.x()>=0 && line.x()<tmp_imageData3D.width && line.y()>=0 && line.y()<tmp_imageData3D.height){
+            image.setPixel(line.x(),line.y(), qRgb(255, 255, 0));
+        }
+    }
 }
 void ImageLoader::drawSlice(){
 
@@ -277,30 +369,7 @@ void ImageLoader::drawBoringCircle(QImage &image){
         }
 };
 
-void ImageLoader::drawLineXY(QImage &image)
-{
-    Eigen::Vector3d tanLine;
-    Eigen::Vector3d line;
-    tanLine = localPoint_2 - localPoint_1;
-    double norm = tanLine.norm();
-    tanLine.normalize();
-    for (double i = 0; i < norm; i++) {
-        line = tanLine*i + localPoint_1;
-        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
-    }
-}
-void ImageLoader::drawLineXZ(QImage &image)
-{
-    Eigen::Vector3d tanLine;
-    Eigen::Vector3d line;
-    tanLine = localPoint_2 - localPoint_1;
-    double norm = tanLine.norm();
-    tanLine.normalize();
-    for (double i = 0; i < norm; i++) {
-        line = tanLine*i + localPoint_1;
-        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
-    }
-}
+
 void ImageLoader::reconstructSlice(){
     double slicePercentage = ui->slider_slice_currentLayer->value();
     double rotGrade = ui->slider_slice_rotGrade->value();
@@ -315,7 +384,6 @@ void ImageLoader::reconstructSlice(){
     ui->lineEdit_Slicer_X->setValue(param.pos.x());
     ui->lineEdit_Slicer_Y->setValue(param.pos.y());
     ui->lineEdit_Slicer_Z->setValue(param.pos.z());
-    //ui ->label_slicerCoordinate->setText(MyLib::updatePointslabel(param.pos.x(),param.pos.y(),param.pos.z()));
 
 
     //--------------------------------------------------------------------
@@ -364,32 +432,7 @@ void ImageLoader::reconstructSlice(){
         //updateView();
         //updateAllLabels();
 }
-void ImageLoader::visulizeSliceXZ(QImage &image){
-    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
-    Eigen::Vector3d line;
-    tanLine.normalize();
-    Eigen::Vector3d orthogonalVector(-tanLine.z(),0,tanLine.x());
 
-    for (int l=-100; l<=100; l++){
-        line = param.pos + orthogonalVector*l;
-        if (line.x()>=0 && line.x()<512 && line.z()>=0 && line.z()<256){
-            image.setPixel(line.x(),line.z(), qRgb(255, 255, 0));
-        }
-    }
-}
-void ImageLoader::visulizeSliceXY(QImage &image){
-    Eigen::Vector3d tanLine = localPoint_2 - localPoint_1;
-    Eigen::Vector3d line;
-    tanLine.normalize();
-    Eigen::Vector3d orthogonalVector(-tanLine.y(),tanLine.x(),0);
-
-    for (int l=-100; l<=100; l++){
-        line = param.pos + orthogonalVector*l;
-        if (line.x()>=0 && line.x()<512 && line.y()>=0 && line.y()<512){
-            image.setPixel(line.x(),line.y(), qRgb(255, 255, 0));
-        }
-    }
-}
 
 
 //---------------------------------Slidersupdate------------------------
