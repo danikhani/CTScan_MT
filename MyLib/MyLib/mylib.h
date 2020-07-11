@@ -14,6 +14,10 @@ struct image3D{
     double pixelSpacingZ;
     short *pImage;
 };
+struct logMessages{
+    QString loadingPictureHelp;
+    QString try2;
+};
 
 struct image2D // structure where the reconstructed slice will be stored. Memory will be automaticall allocated whene initialized
 {
@@ -64,7 +68,7 @@ public:
     * \return 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
     */
     static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
-    static QString updatePointslabel(int x, int y, int z);
+    static QString getQTextEditString(int numberofErrors, QString errorText);
     static int rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen::Vector3d& rotatedVector);
     static int calculateBoringLength(Eigen::Vector3d startPoint,Eigen::Vector3d endPoint, double pixelSpacingXY, double pixelSpacingZ, double& boringLength);
 };

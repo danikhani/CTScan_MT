@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="pushButton_layered">
+  <widget class="QPushButton" name="pushButton_load">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -1030,7 +1030,7 @@
    <property name="title">
     <string>Boring Slice</string>
    </property>
-   <widget class="QPushButton" name="pushButton_layered_2">
+   <widget class="QPushButton" name="pushButton_showSlice">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -1181,7 +1181,7 @@
   <zorder>groupBox_3</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
-  <zorder>pushButton_layered</zorder>
+  <zorder>pushButton_load</zorder>
   <zorder>label_xy_image</zorder>
   <zorder>label_xz_image</zorder>
   <zorder>groupBox_4</zorder>

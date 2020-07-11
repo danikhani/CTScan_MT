@@ -17,15 +17,9 @@ public:
     ApplicationData();
     ~ApplicationData();
     bool uploadImage(QString path);
-    //bool calculateDepthMap(int threshold);
-    //const short *getImage();
-    //const short *getDepthMap();
     const image3D getImage3D();
 
 private:
-    //short *m_pImageData;
-    //short *m_pTiefenkarte;
-    //image3D *imageData3D;
     image3D imageData3D;
 };
 

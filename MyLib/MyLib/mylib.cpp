@@ -26,16 +26,15 @@ int MyLib::windowing(int HU_value, int startValue, int windowWidth, int& iGrauwe
     }
 }
 
- //TODO: scalierung muss berücksichtigig werden,
+
 int MyLib::getSlice(const image3D& image, const Reconstruction& param, image2D& im2D){
      Eigen::Vector3d directionsVector;
      Eigen::Vector3d xdirNormed =param.xdir.normalized() ;
      Eigen::Vector3d ydirNormed =param.ydir.normalized() ;
 
-    int error_stat = 0; // returns 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
-    if (false){ // if input image is incorrect
-        error_stat = -1;
-        return error_stat;
+    // returns 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
+    if (image.width ==0 ||image.height ==0 ||image.slices ==0){
+        return -1;
     }
     try {
         for (float i = 0.0; i < im2D.width; i++) {
@@ -57,56 +56,68 @@ int MyLib::getSlice(const image3D& image, const Reconstruction& param, image2D& 
         }
 
     } catch (...) {
-        error_stat = -2;
+        return -2;
     }
-    return error_stat;
+    return 0;
 }
 
-QString MyLib::updatePointslabel(int x, int y, int z){
-    QString printable = QStringLiteral("(%1,%2,%3)").arg(x).arg(y).arg(z);
-    return printable;
+QString MyLib::getQTextEditString(int numberofErrors, QString errorText){
+    QString huOutOfRangeNumber;
+    huOutOfRangeNumber.setNum(numberofErrors);
+    huOutOfRangeNumber += errorText;
+    return huOutOfRangeNumber;
 }
+//0 if ok.-1 if there is a mathematical problem.
 int MyLib::rotateSlice(Eigen::Vector3d normalVector, double rotationGrade, Eigen::Vector3d& rotatedVector){
-    double alpha = 2*M_PI /360 * rotationGrade ;
+    try{
+        double alpha = 2*M_PI /360 * rotationGrade ;
 
-    Eigen::Vector3d normedNormalVector = normalVector.normalized();
+        Eigen::Vector3d normedNormalVector = normalVector.normalized();
 
-    double x  = normedNormalVector.x();
-    double y = normedNormalVector.y();
-    double z = normedNormalVector.z();
+        double x  = normedNormalVector.x();
+        double y = normedNormalVector.y();
+        double z = normedNormalVector.z();
 
-    double s = sin(alpha);
-    double c = cos(alpha);
-    double mc = 1 - c;
+        double s = sin(alpha);
+        double c = cos(alpha);
+        double mc = 1 - c;
 
-    //rotation matrix
-    //source: https://www.geogebra.org/m/fdmmvvma
-    Eigen::Matrix3d rotationMatrix;
-    rotationMatrix(0,0) = c + x * x * mc;
-    rotationMatrix(0,1) = x * y * mc - z * s;
-    rotationMatrix(0,2) =  x * z * mc + y * s;
+        //rotation matrix
+        //source: https://www.geogebra.org/m/fdmmvvma
+        Eigen::Matrix3d rotationMatrix;
+        rotationMatrix(0,0) = c + x * x * mc;
+        rotationMatrix(0,1) = x * y * mc - z * s;
+        rotationMatrix(0,2) =  x * z * mc + y * s;
 
-    rotationMatrix(1,0) = x * y * mc + z * s;
-    rotationMatrix(1,1) = c + y * y * mc;
-    rotationMatrix(1,2) = y * z * mc - x * s;
+        rotationMatrix(1,0) = x * y * mc + z * s;
+        rotationMatrix(1,1) = c + y * y * mc;
+        rotationMatrix(1,2) = y * z * mc - x * s;
 
-    rotationMatrix(2,0) = x * z * mc - y * s;
-    rotationMatrix(2,1) = y * z * mc + x * s;
-    rotationMatrix(2,2) = c + z * z * mc;
+        rotationMatrix(2,0) = x * z * mc - y * s;
+        rotationMatrix(2,1) = y * z * mc + x * s;
+        rotationMatrix(2,2) = c + z * z * mc;
 
-    rotatedVector = rotationMatrix * rotatedVector;
-
-
-    return 1;
+        rotatedVector = rotationMatrix * rotatedVector;
+    }
+    catch (...) {
+        return -1;
+    }
+    return 0;
 }
+//0 if ok.-1 if there is a mathematical problem.
 int MyLib::calculateBoringLength(Eigen::Vector3d startPoint,Eigen::Vector3d endPoint, double pixelSpacingXY, double pixelSpacingZ, double& boringLength){
-    Eigen::Vector3d boringVector = startPoint - endPoint;
-    Eigen::Vector3d scaleVector(pixelSpacingXY,pixelSpacingXY,pixelSpacingZ);
+    try{
+        Eigen::Vector3d boringVector = startPoint - endPoint;
+        Eigen::Vector3d scaleVector(pixelSpacingXY,pixelSpacingXY,pixelSpacingZ);
 
-    boringVector = boringVector.cwiseProduct(scaleVector);
-    boringLength = boringVector.norm();
+        boringVector = boringVector.cwiseProduct(scaleVector);
+        boringLength = boringVector.norm();
+    }
+    catch(...){
+        return -1;
+    }
 
-    return 1;
+    return 0;
 }
 
 

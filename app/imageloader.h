@@ -44,13 +44,13 @@ private:
     Reconstruction param;
     image2D *reco_im2D;
     double scale;
+    bool showSlice;
+    logMessages englishStrings;
 
 
 
 private slots:
     void ReadFile();
-    //static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
-    //void updateView(int depth, int startValue, int windowWidth, int threshold, image3D tmp_imageData3D, QImage& image);
     void updateAllViews();
     void updateXYView();
     void updateXZView();
@@ -69,9 +69,9 @@ private slots:
     void drawBoringCircle(QImage &image);
     void reconstructSlice();
 
-    //void updatedTiefenKarte();
-    //void update3DReflection();
     void mousePressEvent(QMouseEvent *event);
+    void showTheSlice();
+    void updatePointCoordinates();
 
 
     // show values of xy sliders
@@ -93,13 +93,6 @@ private slots:
     void updatedSliceWindowingThreshold(int value);
     void updatedSliceRotGrade(int value);
     void updatedSliceScale(int value);
-
-    void drawSlice();
-
-
-
-
-
 };
 
 #endif // IMAGELOADER_H
