@@ -35,10 +35,8 @@ private:
     Ui::ImageLoader *ui;
     ApplicationData *m_pData;
     image2D *reco_im2D;
-
     Reconstruction param;
     double scale;
-
     bool imageLoaded;
     bool showSlice;
 

@@ -264,7 +264,7 @@ void ImageLoader::drawNormalVectorXY(QImage &image)
     tanLine.normalize();
     for (double i = 0; i < norm; i++) {
         line = tanLine*i + m_pData->point_1;
-        image.setPixel(line.x(),line.y(),qRgb(255, 255, 0));
+        image.setPixel(line.x(),line.y(),qRgb(0, 255, 0));
     }
 }
 void ImageLoader::drawNormalVectorXZ(QImage &image)
@@ -276,7 +276,7 @@ void ImageLoader::drawNormalVectorXZ(QImage &image)
     tanLine.normalize();
     for (double i = 0; i < norm; i++) {
         line = tanLine*i + m_pData->point_1;
-        image.setPixel(line.x(),line.z(),qRgb(255, 255, 0));
+        image.setPixel(line.x(),line.z(),qRgb(0, 255, 0));
     }
 }
 void ImageLoader::visualizeSliceXZ(image3D tmp_imageData3D,QImage &image){
@@ -330,7 +330,6 @@ void ImageLoader::showTheSlice(){
 
 void ImageLoader::mousePressEvent(QMouseEvent *event)
 {
-    //const image3D tmp_imageData3D = m_pData->getImage3D();
     //int x = event->x();
     //int y = event->y();
     QPoint globalPos;
@@ -347,7 +346,6 @@ void ImageLoader::mousePressEvent(QMouseEvent *event)
             m_pData->point_1.y() = localPosXY.y();
             ui->lineEdit_P1_X->setValue(m_pData->point_1.x());
             ui->lineEdit_P1_Y->setValue(m_pData->point_1.y());
-
             updateAllViews();
         }
         else if(event->button() == Qt::RightButton){
@@ -380,21 +378,21 @@ void ImageLoader::drawVerticalXZLine(QImage &image, Eigen::Vector3d point, int d
 }
 void ImageLoader::drawBoringCircle(QImage &image){
 double boringD = ui->doubleSpinBox_boring_Diam ->value();
-double i0 = reco_im2D->width/2;
-    double j0 = reco_im2D->height/2;
-    for (float i = 0; i < reco_im2D->width; i = i+0.1) {
-        // circle equation: (i-i0)^2 + (j-j0)^2 = r^2
+double middlePointI = reco_im2D->width/2;
+    double middlePointJ = reco_im2D->height/2;
+    for (float runParameterI = 0; runParameterI < reco_im2D->width; runParameterI = runParameterI+0.1) {
+        // circle equation: (x-x0)^2 + (y-y0)^2 = r^2
         double scaledRadius = boringD/2*param.scale;
-        double deltaj2 = pow(scaledRadius,2) - pow(i-i0,2);
-        if (deltaj2<0)
+        double deltaJ2 = pow(scaledRadius,2) - pow(runParameterI-middlePointI,2);
+        if (deltaJ2<0)
             continue;
-        double dj1 = pow(deltaj2,.5) + j0;
-        int j1 = (int)dj1;
-        double dj2 = -pow(deltaj2,.5) + j0;
-        int j2 = (int)dj2;
-        if (j1> 0 && j2>0 && j1<reco_im2D->height && j2<reco_im2D->height){
-            image.setPixel(i,j1, qRgb(255, 0, 0));
-            image.setPixel(i,j2, qRgb(255, 0, 0));
+        double dRunParameterJ1 = pow(deltaJ2,.5) + middlePointJ;
+        int runParameterJ1 = (int)dRunParameterJ1;
+        double dRunParameterJ2 = -pow(deltaJ2,.5) + middlePointJ;
+        int runParameterJ2 = (int)dRunParameterJ2;
+        if (runParameterJ1> 0 && runParameterJ2>0 && runParameterJ1<reco_im2D->height && runParameterJ2<reco_im2D->height){
+            image.setPixel(runParameterI,runParameterJ1, qRgb(255, 0, 0));
+            image.setPixel(runParameterI,runParameterJ2, qRgb(255, 0, 0));
         }
     }
     //sho

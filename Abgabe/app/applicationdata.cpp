@@ -51,3 +51,4 @@ Eigen::Vector3d ApplicationData::getnormalVector(){
     return normalVector;
 }
 
+

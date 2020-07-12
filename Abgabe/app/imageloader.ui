@@ -1040,7 +1040,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Show the Slice</string>
+     <string>Show the Slice and Calculate the Bore Length</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="groupBox_13">

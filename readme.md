@@ -27,7 +27,7 @@ Abgabe/Dokumentation/Lasten-Heft.md
 * [Pflichenheft](/Abgabe/Dokumentation/Pflichten-Heft.md):
 Abgabe/Dokumentation/Lasten-Heft.md
 
-* [Risiko Analyse] (/Abgabe/Dokumentation/RiskAnalysis_SWEIDMT_SS2020.xlsm):
+* Risiko Analyse:
 Abgabe/Dokumentation/RiskAnalysis_SWEIDMT_SS2020.xlsm
 ### Project structure
 
