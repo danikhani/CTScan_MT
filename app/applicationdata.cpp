@@ -9,6 +9,8 @@ ApplicationData::ApplicationData()
     // size of everypixel in mm
     imageData3D.pixelSpacingXY= 1.2695;
     imageData3D.pixelSpacingZ = 2.0000;
+    Eigen::Vector3d point_1(0,0,0);
+    Eigen::Vector3d point_2(0,0,0);
 }
 
 ApplicationData::~ApplicationData()
@@ -44,3 +46,8 @@ bool ApplicationData::uploadImage(QString path){
 
     return true;
 }
+Eigen::Vector3d ApplicationData::getnormalVector(){
+    normalVector = point_2 - point_1;
+    return normalVector;
+}
+

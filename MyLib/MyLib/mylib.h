@@ -14,10 +14,6 @@ struct image3D{
     double pixelSpacingZ;
     short *pImage;
 };
-struct logMessages{
-    QString loadingPictureHelp;
-    QString try2;
-};
 
 struct image2D // structure where the reconstructed slice will be stored. Memory will be automaticall allocated whene initialized
 {
@@ -38,7 +34,6 @@ struct Reconstruction // Parameters for Slice reconstruction
     Eigen::Vector3d ydir; // direction of the y-axis of the reconstructed slice within the voxel dataset
     double scale; // Scaling, such as 1.0 reconstructs an image where 1 pixel corresponds to 1mm
 } ;
-
 
 class MYLIB_EXPORT MyLib
 {
@@ -68,8 +63,33 @@ public:
     * \return 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
     */
     static int getSlice(const image3D& image, const Reconstruction& param, image2D& im2D);
+    /**
+     * @brief getQTextEditString
+     * generate Error message
+     * @param numberofErrors number of times an Error happens
+     * @param errorText desired thext of the error
+     * @return a finished QString text with number of errors
+     */
     static QString getQTextEditString(int numberofErrors, QString errorText);
+    /**
+     * @brief rotateSlice
+     * rotates the a vector around another vector using euler rotation matrix
+     * @param normalVector The Eigen::Vector which acts as a rotation axis
+     * @param rotationGrade Grade of the rotation in Radian
+     * @param rotatedVector reconstructed the Eigen::Vector which needs to be rotated
+     * @return 0 if ok. -1 if an exception catched.
+     */
     static int rotateSlice(Eigen::Vector3d normalVector, double rotationGrade,Eigen::Vector3d& rotatedVector);
+    /**
+     * @brief calculateBoringLength
+     * calculates the length of the drill
+     * @param startPoint Eigen::Vector of the starting point
+     * @param endPoint Eigen::Vector of end point
+     * @param pixelSpacingXY scale of XY pixel spacing
+     * @param pixelSpacingZ scale of Z pixel spacing
+     * @param boringLength reconstructed length of the calculated length
+     * @return 0 if ok. -1 if an expection happens
+     */
     static int calculateBoringLength(Eigen::Vector3d startPoint,Eigen::Vector3d endPoint, double pixelSpacingXY, double pixelSpacingZ, double& boringLength);
 };
 
