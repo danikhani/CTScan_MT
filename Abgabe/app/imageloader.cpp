@@ -5,7 +5,6 @@ ImageLoader::ImageLoader(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ImageLoader)
 {
-
     ui->setupUi(this);
     //for connecting the ui elements to the class:
     //the buttons
@@ -82,10 +81,10 @@ void ImageLoader::updateXYView(){
         // draw the pixels
         drawXYPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
-        //draw the line
+        //draw the xy projection of the normalvector
         drawNormalVectorXY(image);
 
-        //draw the orthogonal line
+        //draw the orthogonal line to the normalvector
         if(showSlice){
             visualizeSliceXY(tmp_imageData3D,image);
         }
@@ -109,6 +108,9 @@ void ImageLoader::updateXZView(){
         // draw the pixels
         drawXZPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
+        //draw the xz projection of the normalvector
+        drawNormalVectorXZ(image);
+
         //draw the vertical lines
         if(m_pData->point_1.x() != 0){
             drawVerticalXZLine(image,m_pData->point_1, tmp_imageData3D.slices);
@@ -116,11 +118,8 @@ void ImageLoader::updateXZView(){
         if(m_pData->point_2.x() != 0){
             drawVerticalXZLine(image,m_pData->point_2, tmp_imageData3D.slices);
         }
-        //draw the boringLine
-        if(m_pData->point_1.z()!=0 && m_pData->point_2.z()!=0){
-            drawNormalVectorXZ(image);
-        }
-        //show the orthogonal slice
+
+        //draw the orthogonal line to the normalvector
         if(showSlice){
             visualizeSliceXZ(tmp_imageData3D,image);
         }
@@ -141,9 +140,12 @@ void ImageLoader::updateSliceView(){
     int numberHUOutOfRange = 0;
     int numberWindowingOutOfRange = 0;
     int error_stat = 0;
+
+    if(!showSlice){
+        emit LOG_State("Click on 'Show the Slice' to view the slice!");
+    }
     // draw the pixels
     drawSlicePixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
-    emit LOG_State("Press 'Show the Slice' to view the slice!");
 
     if(ui->checkBox_showBoring->checkState()){
         drawBoringCircle(image);
@@ -282,6 +284,7 @@ void ImageLoader::visualizeSliceXZ(image3D tmp_imageData3D,QImage &image){
     Eigen::Vector3d line;
     tanLine.normalize();
     Eigen::Vector3d orthogonalVector(-tanLine.z(),0,tanLine.x());
+
 
     for (int l=-100; l<=100; l++){
         line = param.pos + orthogonalVector*l;

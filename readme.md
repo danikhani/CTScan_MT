@@ -9,17 +9,26 @@ A program to plan a Femoral neck fracture surgeury from CT files.
 
 Download the project using the QT project import feature.
 
+### Features
+
+(In German)
+See the [Pflichenheft](/Abgabe/Dokumentation/Pflichten-Heft.md):
+Abgabe/Dokumentation/Lasten-Heft.md
+
 ### Librarys
 
 Eigen 3.3.7
 
 ### Documentation
 
-* Location of [Lastenheft](/Abgabe/Dokumentation/Lasten-Heft.md):
+* [Lastenheft](/Abgabe/Dokumentation/Lasten-Heft.md):
 Abgabe/Dokumentation/Lasten-Heft.md
 
-* Location of [Pflichenheft](/Abgabe/Dokumentation/Pflichten-Heft.md):
+* [Pflichenheft](/Abgabe/Dokumentation/Pflichten-Heft.md):
 Abgabe/Dokumentation/Lasten-Heft.md
+
+* [Risiko Analyse] (/Abgabe/Dokumentation/RiskAnalysis_SWEIDMT_SS2020.xlsm):
+Abgabe/Dokumentation/RiskAnalysis_SWEIDMT_SS2020.xlsm
 ### Project structure
 
 ##### MyLib
