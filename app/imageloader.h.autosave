@@ -42,6 +42,7 @@ private:
     Eigen::Vector3d localPoint_1;
     Eigen::Vector3d localPoint_2;
     Reconstruction param;
+    
     image2D *reco_im2D;
     double scale;
     bool showSlice;

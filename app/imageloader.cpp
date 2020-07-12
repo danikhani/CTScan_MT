@@ -30,6 +30,7 @@ ImageLoader::ImageLoader(QWidget *parent) :
     connect(ui->slider_slice_rotGrade, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceRotGrade(int)));
     connect(ui->slider_slice_scale, SIGNAL(valueChanged(int)), this, SLOT(updatedSliceScale(int)));
 
+
     localPoint_1.x() = 0;
     localPoint_1.y() = 0;
     localPoint_1.z() = 0;
@@ -37,17 +38,17 @@ ImageLoader::ImageLoader(QWidget *parent) :
     localPoint_2.y() = 0;
     localPoint_2.z() = 0;
 
-    reco_im2D =  new image2D(512,512);
     scale = 1;
 
     showSlice = false;
-
-
+    imageLoaded = false;
 }
 
 ImageLoader::~ImageLoader()
 {
     delete ui;
+    delete reco_im2D;
+    delete m_pData;
 }
 
 void ImageLoader::setData(ApplicationData *pData){
@@ -62,6 +63,7 @@ void ImageLoader::ReadFile(){
     //update 3Dview
 
     if(status == 1){
+        imageLoaded = true;
         updateAllViews();
         emit LOG_State("Image Loaded");
         emit LOG_Instructions("Left Click on the XY Plane to choose the X and Y of the first point");
@@ -79,62 +81,66 @@ void ImageLoader::updateAllViews(){
     updateXYView();
    }
 void ImageLoader::updateXYView(){
-    //loading data from application data
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    //ui elements
-    int numberHUOutOfRange = 0;
-    int numberWindowingOutOfRange = 0;
-    QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
-    // draw the pixels
-    drawXYPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
+    if(imageLoaded){
+        //loading data from application data
+        const image3D tmp_imageData3D = m_pData->getImage3D();
+        //ui elements
+        int numberHUOutOfRange = 0;
+        int numberWindowingOutOfRange = 0;
+        QImage image(tmp_imageData3D.width,tmp_imageData3D.height, QImage::Format_RGB32);
+        // draw the pixels
+        drawXYPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
 
-    //draw the line
-    if(localPoint_1.x() != 0 && localPoint_1.y() != 0 && localPoint_2.x() != 0 && localPoint_2.y() != 0 ){
-        drawNormalVectorXY(image);
-    }
-    //draw the orthogonal line
-    if(showSlice){
-        visualizeSliceXY(tmp_imageData3D,image);
-    }
+        //draw the line
+        if(localPoint_1.x() != 0 && localPoint_1.y() != 0 && localPoint_2.x() != 0 && localPoint_2.y() != 0 ){
+            drawNormalVectorXY(image);
+        }
+        //draw the orthogonal line
+        if(showSlice){
+            visualizeSliceXY(tmp_imageData3D,image);
+        }
 
-    ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
-    //error number of HU or Windowing out of range
-    if(numberHUOutOfRange!=0 ||numberWindowingOutOfRange!= 0){
-    emit LOG_State(MyLib::getQTextEditString(numberHUOutOfRange," times was/were HU_Value out of Range while loading XY view"));
-    emit LOG_State(MyLib::getQTextEditString(numberWindowingOutOfRange," times was/were Windowing out of Range while loading XY view"));
+        ui->label_xy_image->setPixmap(QPixmap::fromImage(image));
+        //error number of HU or Windowing out of range
+        if(numberHUOutOfRange!=0 ||numberWindowingOutOfRange!= 0){
+            emit LOG_State(MyLib::getQTextEditString(numberHUOutOfRange," times was/were HU_Value out of Range while loading XY view"));
+            emit LOG_State(MyLib::getQTextEditString(numberWindowingOutOfRange," times was/were Windowing out of Range while loading XY view"));
+        }
     }
 }
 void ImageLoader::updateXZView(){
-    //loading data from application data
-    const image3D tmp_imageData3D = m_pData->getImage3D();
-    //ui elements
-    QImage image(tmp_imageData3D.width,tmp_imageData3D.slices, QImage::Format_RGB32);
-    int numberHUOutOfRange = 0;
-    int numberWindowingOutOfRange = 0;
-    // draw the pixels
-    drawXZPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
+    if(imageLoaded){
+        //loading data from application data
+        const image3D tmp_imageData3D = m_pData->getImage3D();
+        //ui elements
+        QImage image(tmp_imageData3D.width,tmp_imageData3D.slices, QImage::Format_RGB32);
+        int numberHUOutOfRange = 0;
+        int numberWindowingOutOfRange = 0;
+        // draw the pixels
+        drawXZPixels(tmp_imageData3D,image,numberHUOutOfRange,numberWindowingOutOfRange);
 
-    //draw the vertical lines
-    if(localPoint_1.x() != 0){
-        drawVerticalXZLine(image,localPoint_1, tmp_imageData3D.slices);
-    }
-    if(localPoint_2.x() != 0){
-        drawVerticalXZLine(image,localPoint_2, tmp_imageData3D.slices);
-    }
-    if(localPoint_1.z()!=0 && localPoint_2.z()!=0){
-        drawNormalVectorXZ(image);
-    }
-    if(showSlice){
-        visualizeSliceXZ(tmp_imageData3D,image);
-    }
+        //draw the vertical lines
+        if(localPoint_1.x() != 0){
+            drawVerticalXZLine(image,localPoint_1, tmp_imageData3D.slices);
+        }
+        if(localPoint_2.x() != 0){
+            drawVerticalXZLine(image,localPoint_2, tmp_imageData3D.slices);
+        }
+        if(localPoint_1.z()!=0 && localPoint_2.z()!=0){
+            drawNormalVectorXZ(image);
+        }
+        if(showSlice){
+            visualizeSliceXZ(tmp_imageData3D,image);
+        }
 
 
-    ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
-    //error number of HU or Windowing out of range
-    if(numberHUOutOfRange!=0 || numberWindowingOutOfRange!= 0){
-        emit LOG_State(MyLib::getQTextEditString(numberHUOutOfRange," times was/were HU_Value out of Range while loading XZ view"));
-        emit LOG_State(MyLib::getQTextEditString(numberWindowingOutOfRange," times was/were Windowing out of Range while loading XZ view"));
+        ui->label_xz_image->setPixmap(QPixmap::fromImage(image));
+        //error number of HU or Windowing out of range
+        if(numberHUOutOfRange!=0 || numberWindowingOutOfRange!= 0){
+            emit LOG_State(MyLib::getQTextEditString(numberHUOutOfRange," times was/were HU_Value out of Range while loading XZ view"));
+            emit LOG_State(MyLib::getQTextEditString(numberWindowingOutOfRange," times was/were Windowing out of Range while loading XZ view"));
+        }
     }
 
 }
@@ -237,7 +243,7 @@ void ImageLoader::drawSlicePixels(image3D tmp_imageData3D, QImage &image,int &nu
     int hu_value;
     for (int y = 0; y < tmp_imageData3D.width; y++){
         for (int x = 0; x < tmp_imageData3D.height; x++){
-            hu_value = reco_im2D->pImage[y + 512*x];
+            hu_value = reco_im2D->pImage[y + tmp_imageData3D.height*x];
             int windowingError = MyLib::windowing(hu_value,startSlider,widthSlider,iGrauwert);
             image.setPixel(y,x, qRgb(iGrauwert, iGrauwert, iGrauwert));
             //0 if ok.-1 if HU_value is out of range. -2 if windowing parameters are out of range
@@ -416,8 +422,8 @@ void ImageLoader::reconstructSlice(){
     ui->lineEdit_Slicer_Y->setValue(param.pos.y());
     ui->lineEdit_Slicer_Z->setValue(param.pos.z());
 
-    //First directionvector of the surface estimated using the normalvector.
-    //using euler rotation matrix. the first directionvector can get rotated using the normalvector as an rotation axis.
+    //First direction vector of the surface estimated using the normalvector.
+    //using euler rotation matrix. the first direction vector can get rotated using the normalvector as a rotation axis.
     //Crossproduct of the normalVector and the first directionvector .
     if (normalVector.x()==0 && normalVector.y()==0){
         Eigen::Vector3d tempVector(1,0,0);
@@ -456,6 +462,7 @@ void ImageLoader::reconstructSlice(){
 
     //loading data from application data
     const image3D tmp_imageData3D = m_pData->getImage3D();
+    reco_im2D =  new image2D(tmp_imageData3D.height,tmp_imageData3D.width);
 
     // Error handling :return 0 if ok. -1 if input image is incorrect. -2 if output im2D is incorrect.
     int err_stat = MyLib::getSlice(tmp_imageData3D, param, *reco_im2D);
@@ -467,9 +474,6 @@ void ImageLoader::reconstructSlice(){
     }
 
 }
-
-
-
 //---------------------------------Sliders update------------------------
 //XY window
 void ImageLoader::updatedXYWindowingStart(int value)
@@ -484,7 +488,7 @@ void ImageLoader::updatedXYWindowingWidth(int value)
 }
 void ImageLoader::updatedXYCurrentLayer(int value)
 {
-    ui ->label_xy_currentLayer->setText("Layer" + QString::number(value));
+    ui ->label_xy_currentLayer->setText("Z = " + QString::number(value+1));
     updateXYView();
 }
 void ImageLoader::updatedXYWindowingThreshold(int value)
@@ -505,7 +509,7 @@ void ImageLoader::updatedXZWindowingWidth(int value)
 }
 void ImageLoader::updatedXZCurrentLayer(int value)
 {
-    ui ->label_xz_currentLayer->setText("Layer" + QString::number(value));
+    ui ->label_xz_currentLayer->setText("Y= " + QString::number(value+1));
     updateXZView();
 }
 void ImageLoader::updatedXZWindowingThreshold(int value)

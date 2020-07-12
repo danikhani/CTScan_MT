@@ -15,7 +15,6 @@ ApplicationData::~ApplicationData()
 {
 
     delete[] imageData3D.pImage;
-    //delete[] imageData3D;
 
 }
 const image3D ApplicationData::getImage3D(){

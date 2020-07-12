@@ -162,7 +162,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Threshold: 900</string>
+     <string>Threshold:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_xy_width">
@@ -175,7 +175,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Width: 900</string>
+     <string>Width:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_xy_start">
@@ -188,7 +188,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Start: -400</string>
+     <string>Start:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_xy_currentLayer">
@@ -201,7 +201,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Layer:</string>
+     <string>Z =</string>
     </property>
    </widget>
    <widget class="QSlider" name="slider_xy_currentLayer">
@@ -259,7 +259,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Layer:</string>
+     <string>Y =</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_xz_start">
