@@ -9,7 +9,7 @@ sweidmt::sweidmt(QWidget *parent)
     //this will make the widget object
     m_pImageLoader = new ImageLoader(this);
     // to point the widget zeiger to the object
-    ui ->tabWidget->addTab(m_pImageLoader, "LoadImage");
+    ui ->tabWidget->addTab(m_pImageLoader, "Bore Viewer");
     m_pImageLoader->setData(&m_Data);
 
     connect(m_pImageLoader, SIGNAL(LOG_State(QString)), this, SLOT(LOG_State(QString)));
