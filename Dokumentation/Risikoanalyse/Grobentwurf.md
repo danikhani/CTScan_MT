@@ -1,3 +1,0 @@
-# Grobentwurf
-
-## Ziel:

@@ -2,6 +2,9 @@
 
 A program to plan a surgeury from CT files.
 
+## Overview
+![Alt text](/Screenshot/GUI-Overview_Test.png?raw=true)
+
 ## Getting Started
 
 Download the project using the QT project import feature.
@@ -12,14 +15,17 @@ Eigen 3.3.7
 
 ### Documentation
 
-* Location of [Lastenheft](Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md):
-Dokumentation/Lasten-Pflichten_Heft/Lasten-Heft.md
+* Location of [Lastenheft](/Abgabe/Dokumentation/Lasten-Heft.md):
+Abgabe/Dokumentation/Lasten-Heft.md
 
-* Location of [Pflichenheft](Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md):
-Dokumentation/Lasten-Pflichten_Heft/Pflichten-Heft.md
+* Location of [Pflichenheft](/Abgabe/Dokumentation/Pflichten-Heft.md):
+Abgabe/Dokumentation/Lasten-Heft.md
 ### Project structure
 
-app/Applicationdata will save the image data
+#### MyLib
+
+app/Applicationdata will save all the Data
+
 Mylib is for using the codes over and over
 
 ## Authors
