@@ -3,7 +3,7 @@
 A program to plan a Femoral neck fracture surgeury from CT files.
 
 ## Overview
-![Alt text](/Screenshot/GUI-Overview_Test.png?raw=true)
+![Alt text](/Screenshot/GUI-Overview-Test.png?raw=true)
 
 ## Getting Started
 
