@@ -47,7 +47,7 @@ app/imageLoader has all the GUI-widgets for the Bore Viewer
 
 ## Authors
 
-* **Danial Hezarkhani** - *Development*
+* **Danikhani**
 
 ## License
 
